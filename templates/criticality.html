@@ -1,0 +1,131 @@
+{% extends "index.html" %}
+{% block content %}
+    <style>
+        .risk-low {
+            background-color: #4CAF50; /* Зелёный для низкого риска (1.0–3.9) */
+            color: white;
+        }
+        .risk-medium {
+            background-color: #FFC107; /* Жёлтый для среднего риска (4.0–6.9) */
+            color: black;
+        }
+        .risk-high {
+            background-color: #F44336; /* Красный для высокого риска (7.0–9.0) */
+            color: white;
+        }
+    </style>
+    <h2 class="text-xl font-semibold mb-4">Критичность и риски активов</h2>
+    {% if weights %}
+        <h3 class="text-lg font-semibold mb-2">Веса критериев</h3>
+        <table class="table-auto w-full mb-4">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2">Жизнь/Здоровье</th>
+                    <th class="px-4 py-2">Экономика</th>
+                    <th class="px-4 py-2">Экология</th>
+                    <th class="px-4 py-2">Зависимость</th>
+                    <th class="px-4 py-2">Социальное</th>
+                    <th class="px-4 py-2">Международное</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="border px-4 py-2">{{ (weights[0] * 100) | round(2) }}%</td>
+                    <td class="border px-4 py-2">{{ (weights[1] * 100) | round(2) }}%</td>
+                    <td class="border px-4 py-2">{{ (weights[2] * 100) | round(2) }}%</td>
+                    <td class="border px-4 py-2">{{ (weights[3] * 100) | round(2) }}%</td>
+                    <td class="border px-4 py-2">{{ (weights[4] * 100) | round(2) }}%</td>
+                    <td class="border px-4 py-2">{{ (weights[5] * 100) | round(2) }}%</td>
+                </tr>
+            </tbody>
+        </table>
+    {% endif %}
+    {% if ranked_risks %}
+        <h3 class="text-lg font-semibold mb-2">Ранжирование активов и риски</h3>
+        <table class="table-auto w-full mb-4">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2">Актив</th>
+                    <th class="px-4 py-2">Критичность</th>
+                    <th class="px-4 py-2">Impact</th>
+                    <th class="px-4 py-2">Усреднённая вероятность</th>
+                    <th class="px-4 py-2">Первоначальный риск</th>
+                    <th class="px-4 py-2">Остаточный риск</th>
+                    <th class="px-4 py-2">Уровень риска</th>
+                    <th class="px-4 py-2">Интерпретация по уровням риска</th>
+                    <th class="px-4 py-2">Ранг</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for risk in ranked_risks %}
+                    <tr>
+                        <td class="border px-4 py-2">{{ risk[0] }}</td>
+                        <td class="border px-4 py-2">{{ risk[1] }}</td>
+                        <td class="border px-4 py-2">{{ risk[2] }}</td>
+                        <td class="border px-4 py-2">{{ risk[3] }}</td>
+                        <td class="border px-4 py-2">{{ risk[4] }}</td>
+                        <td class="border px-4 py-2">{{ risk[5] }}</td>
+                        <td class="border px-4 py-2 {{ 'risk-low' if risk[6] == 'Низкий' else 'risk-medium' if risk[6] == 'Средний' else 'risk-high' }}">{{ risk[6] }}</td>
+                        <td class="border px-4 py-2">{{ risk[7] }}</td>
+                        <td class="border px-4 py-2">{{ risk[8] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if heatmap %}
+            <h3 class="text-lg font-semibold mb-2">Тепловая карта остаточных рисков</h3>
+            <img src="{{ url_for('static', filename=heatmap) }}" alt="Тепловая карта остаточных рисков" class="w-full max-w-3xl">
+        {% endif %}
+    {% else %}
+        <p class="text-gray-600">Нет данных для расчёта рисков. Пожалуйста, добавьте оценки активов и вероятности угроз.</p>
+    {% endif %}
+    <h3 class="text-lg font-semibold mb-2 mt-8">Risk analysis table</h3>
+    <a href="{{ url_for('add_risk_analysis') }}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">Добавить запись анализа рисков</a>
+    {% if risk_analysis_data %}
+        <table class="table-auto w-full mb-4">
+            <thead>
+                <tr>
+                    <th class="px-4 py-2"># asset</th>
+                    <th class="px-4 py-2"># risk</th>
+                    <th class="px-4 py-2">Asset name</th>
+                    <th class="px-4 py-2">Asset owner</th>
+                    <th class="px-4 py-2">Threat</th>
+                    <th class="px-4 py-2">Vulnerability</th>
+                    <th class="px-4 py-2">Impact</th>
+                    <th class="px-4 py-2">Likelihood</th>
+                    <th class="px-4 py-2">Первоначальный риск</th>
+                    <th class="px-4 py-2">Taken measures</th>
+                    <th class="px-4 py-2">Control effectiveness</th>
+                    <th class="px-4 py-2">Residual risk</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ra in risk_analysis_data %}
+                    <tr>
+                        <td class="border px-4 py-2">{{ ra[0] }}</td>
+                        <td class="border px-4 py-2">{{ ra[1] }}</td>
+                        <td class="border px-4 py-2">{{ ra[2] }}</td>
+                        <td class="border px-4 py-2">{{ ra[3] }}</td>
+                        <td class="border px-4 py-2">{{ ra[4] }}</td>
+                        <td class="border px-4 py-2">{{ ra[5] }}</td>
+                        <td class="border px-4 py-2">{{ ra[6] }}</td>
+                        <td class="border px-4 py-2">{{ ra[7] }}</td>
+                        <td class="border px-4 py-2">{{ ra[8] }}</td>
+                        <td class="border px-4 py-2">{{ ra[9] }}</td>
+                        <td class="border px-4 py-2">
+                            {{ ra[11] | round(2) if ra[11] is not none else '0.00' }}
+                            {% if ra[9] == 'Минимизация рисков и выбор контролей' and ra[10] is not none %}
+                                <div class="control-measure-div">
+                                    {{ ra[10] }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="border px-4 py-2 {{ 'risk-low' if ra[12] >= 1.0 and ra[12] <= 3.9 else 'risk-medium' if ra[12] >= 4.0 and ra[12] <= 6.9 else 'risk-high' }}">{{ ra[12] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-gray-600">Нет данных для анализа рисков. Пожалуйста, добавьте записи анализа рисков.</p>
+    {% endif %}
+{% endblock %}

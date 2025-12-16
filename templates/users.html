@@ -1,0 +1,24 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Список пользователей</h2>
+    <a href="{{ url_for('add_user') }}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">Добавить пользователя</a>
+    <table class="table-auto w-full mt-4">
+        <thead>
+            <tr>
+                <th class="px-4 py-2">Имя пользователя</th>
+                <th class="px-4 py-2">Роль</th>
+                <th class="px-4 py-2">Эксперт</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td class="border px-4 py-2">{{ user[1] }}</td>
+                    <td class="border px-4 py-2">{{ 'Администратор' if user[2] == 'admin' else 'Эксперт' }}</td>
+                    <td class="border px-4 py-2">{{ user[3] if user[3] else '-' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+

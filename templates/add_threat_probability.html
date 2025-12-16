@@ -1,0 +1,35 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Добавить вероятность угрозы</h2>
+    <form method="POST" action="{{ url_for('add_threat_probability') }}" class="space-y-4">
+        <div>
+            <label for="asset_id" class="block">Актив:</label>
+            <select id="asset_id" name="asset_id" class="border p-2 w-full" required>
+                {% for asset in assets %}
+                    <option value="{{ asset[0] }}">{{ asset[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if session.get('role') == 'admin' %}
+        <div>
+            <label for="expert_id" class="block">Эксперт:</label>
+            <select id="expert_id" name="expert_id" class="border p-2 w-full" required>
+                {% for expert in experts %}
+                    <option value="{{ expert[0] }}">{{ expert[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% else %}
+        <input type="hidden" name="expert_id" value="{{ experts[0][0] if experts else '' }}">
+        <div>
+            <label class="block">Эксперт:</label>
+            <p class="border p-2 w-full bg-gray-100">{{ experts[0][1] if experts else 'Не найден' }}</p>
+        </div>
+        {% endif %}
+        <div>
+            <label for="probability" class="block">Вероятность (1–3):</label>
+            <input type="number" id="probability" name="probability" class="border p-2 w-full" step="0.1" min="1" max="3" required>
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Сохранить</button>
+    </form>
+{% endblock %}

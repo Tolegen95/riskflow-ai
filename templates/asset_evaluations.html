@@ -1,0 +1,40 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Оценки активов</h2>
+    <a href="{{ url_for('add_asset_evaluation') }}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">Добавить оценку</a>
+    <table class="table-auto w-full mt-4">
+        <thead>
+            <tr>
+                <th class="px-4 py-2">Актив</th>
+                <th class="px-4 py-2">Эксперт</th>
+                <th class="px-4 py-2">Жизнь/Здоровье</th>
+                <th class="px-4 py-2">Экономика</th>
+                <th class="px-4 py-2">Экология</th>
+                <th class="px-4 py-2">Зависимость</th>
+                <th class="px-4 py-2">Социальное</th>
+                <th class="px-4 py-2">Международное</th>
+                <th class="px-4 py-2">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evaluation in evaluations %}
+                <tr>
+                    <td class="border px-4 py-2">{{ evaluation[1] }}</td>
+                    <td class="border px-4 py-2">{{ evaluation[2] }}</td>
+                    <td class="border px-4 py-2">{{ evaluation[3] | round(2) }}</td>
+                    <td class="border px-4 py-2">{{ evaluation[4] | round(2) }}</td>
+                    <td class="border px-4 py-2">{{ evaluation[5] | round(2) }}</td>
+                    <td class="border px-4 py-2">{{ evaluation[6] | round(2) }}</td>
+                    <td class="border px-4 py-2">{{ evaluation[7] | round(2) }}</td>
+                    <td class="border px-4 py-2">{{ evaluation[8] | round(2) }}</td>
+                    <td class="border px-4 py-2">
+                        <a href="{{ url_for('edit_asset_evaluation', id=evaluation[0]) }}" class="text-blue-500 hover:underline">Редактировать</a> |
+                        <form action="{{ url_for('delete_asset_evaluation', id=evaluation[0]) }}" method="POST" style="display:inline;" onsubmit="return confirm('Вы уверены, что хотите удалить эту оценку?');">
+                            <button type="submit" class="text-red-500 hover:underline">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

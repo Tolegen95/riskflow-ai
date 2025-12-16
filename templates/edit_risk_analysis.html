@@ -1,0 +1,83 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Редактировать запись анализа рисков</h2>
+    <form method="POST" action="{{ url_for('edit_risk_analysis', id=risk_analysis[0]) }}">
+        <div class="mb-4">
+            <label for="asset_id" class="block text-sm font-medium text-gray-700">Актив</label>
+            <select name="asset_id" id="asset_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                {% for asset in assets %}
+                    <option value="{{ asset[0] }}" {% if asset[0] == risk_analysis[1] %}selected{% endif %}>{{ asset[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="asset_owner_id" class="block text-sm font-medium text-gray-700">Владелец актива</label>
+            <select name="asset_owner_id" id="asset_owner_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                {% for owner in asset_owners %}
+                    <option value="{{ owner[0] }}" {% if owner[0] == risk_analysis[2] %}selected{% endif %}>{{ owner[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="threat_id" class="block text-sm font-medium text-gray-700">Угроза</label>
+            <select name="threat_id" id="threat_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                {% for threat in threats %}
+                    <option value="{{ threat[0] }}" {% if threat[0] == risk_analysis[3] %}selected{% endif %}>{{ threat[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="vulnerability_id" class="block text-sm font-medium text-gray-700">Уязвимость</label>
+            <select name="vulnerability_id" id="vulnerability_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                {% set current_category = '' %}
+                {% for vulnerability in vulnerabilities %}
+                    {% if vulnerability[2] != current_category %}
+                        {% if current_category != '' %}
+                            </optgroup>
+                        {% endif %}
+                        <optgroup label="{{ vulnerability[2] }}">
+                        {% set current_category = vulnerability[2] %}
+                    {% endif %}
+                    <option value="{{ vulnerability[0] }}" {% if vulnerability[0] == risk_analysis[4] %}selected{% endif %}>{{ vulnerability[1] }}</option>
+                {% endfor %}
+                {% if current_category != '' %}
+                    </optgroup>
+                {% endif %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="taken_measure_id" class="block text-sm font-medium text-gray-700">Принятые меры</label>
+            <select name="taken_measure_id" id="taken_measure_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                {% for measure in taken_measures %}
+                    <option value="{{ measure[0] }}" {% if measure[0] == risk_analysis[5] %}selected{% endif %}>{{ measure[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4" id="control_measure_div" style="display: {% if risk_analysis[5] %} {% if taken_measures|selectattr('0', 'equalto', risk_analysis[5])|map(attribute='1')|first == 'Минимизация рисков и выбор контролей' %}block{% else %}none{% endif %} {% else %}none{% endif %};">
+            <label for="control_measure_id" class="block text-sm font-medium text-gray-700">Мера контроля</label>
+            <select name="control_measure_id" id="control_measure_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                <option value="">Не выбрано</option>
+                {% for control in control_measures %}
+                    <option value="{{ control[0] }}" {% if control[0] == risk_analysis[6] %}selected{% endif %}>{{ control[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-4">
+            <label for="control_effectiveness" class="block text-sm font-medium text-gray-700">Эффективность защиты (0–1)</label>
+            <input type="number" name="control_effectiveness" id="control_effectiveness" step="0.01" min="0" max="1" value="{{ risk_analysis[7] | default('') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="0–1">
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Сохранить</button>
+    </form>
+    <script>
+        document.getElementById('taken_measure_id').addEventListener('change', function() {
+            var controlMeasureDiv = document.getElementById('control_measure_div');
+            var selectedMeasure = this.options[this.selectedIndex].text;
+            if (selectedMeasure === 'Минимизация рисков и выбор контролей') {
+                controlMeasureDiv.style.display = 'block';
+            } else {
+                controlMeasureDiv.style.display = 'none';
+                document.getElementById('control_measure_id').value = '';
+            }
+        });
+    </script>
+{% endblock %}

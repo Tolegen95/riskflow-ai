@@ -1,0 +1,49 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Добавить пользователя</h2>
+    <form method="POST" action="{{ url_for('add_user') }}" class="space-y-4">
+        <div>
+            <label for="username" class="block">Имя пользователя:</label>
+            <input type="text" id="username" name="username" class="border p-2 w-full" required>
+        </div>
+        <div>
+            <label for="password" class="block">Пароль:</label>
+            <input type="password" id="password" name="password" class="border p-2 w-full" required>
+        </div>
+        <div>
+            <label for="role" class="block">Роль:</label>
+            <select id="role" name="role" class="border p-2 w-full" required onchange="toggleExpertSelect()">
+                <option value="admin">Администратор</option>
+                <option value="expert">Эксперт</option>
+            </select>
+        </div>
+        <div id="expert_select_div">
+            <label for="expert_id" class="block">Эксперт:</label>
+            <select id="expert_id" name="expert_id" class="border p-2 w-full">
+                <option value="">Выберите эксперта</option>
+                {% for expert in experts %}
+                    <option value="{{ expert[0] }}">{{ expert[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Создать</button>
+    </form>
+    <script>
+        function toggleExpertSelect() {
+            const role = document.getElementById('role').value;
+            const expertDiv = document.getElementById('expert_select_div');
+            const expertSelect = document.getElementById('expert_id');
+            if (role === 'expert') {
+                expertDiv.style.display = 'block';
+                expertSelect.required = true;
+            } else {
+                expertDiv.style.display = 'none';
+                expertSelect.required = false;
+                expertSelect.value = '';
+            }
+        }
+        // Инициализация при загрузке
+        toggleExpertSelect();
+    </script>
+{% endblock %}
+

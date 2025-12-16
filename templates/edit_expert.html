@@ -1,0 +1,11 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Редактировать эксперта</h2>
+    <form method="POST" action="{{ url_for('edit_expert', id=expert[0]) }}" class="space-y-4">
+        <div>
+            <label for="name" class="block">Имя:</label>
+            <input type="text" id="name" name="name" class="border p-2 w-full" value="{{ expert[1] }}" required>
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Сохранить изменения</button>
+    </form>
+{% endblock %}

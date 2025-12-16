@@ -1,0 +1,68 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Добавить оценку актива</h2>
+    <form method="POST" action="{{ url_for('add_asset_evaluation') }}" class="space-y-4" onsubmit="return validateForm()">
+        <div>
+            <label for="asset_id" class="block">Актив:</label>
+            <select id="asset_id" name="asset_id" class="border p-2 w-full" required>
+                {% for asset in assets %}
+                    <option value="{{ asset[0] }}">{{ asset[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if session.get('role') == 'admin' %}
+        <div>
+            <label for="expert_id" class="block">Эксперт:</label>
+            <select id="expert_id" name="expert_id" class="border p-2 w-full" required>
+                {% for expert in experts %}
+                    <option value="{{ expert[0] }}">{{ expert[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% else %}
+        <input type="hidden" name="expert_id" value="{{ experts[0][0] if experts else '' }}">
+        <div>
+            <label class="block">Эксперт:</label>
+            <p class="border p-2 w-full bg-gray-100">{{ experts[0][1] if experts else 'Не найден' }}</p>
+        </div>
+        {% endif %}
+        <div>
+            <label for="life_health" class="block">Жизнь/Здоровье (0-10):</label>
+            <input type="number" step="0.01" id="life_health" name="life_health" class="border p-2 w-full" min="0" max="10" required>
+        </div>
+        <div>
+            <label for="economy" class="block">Экономика (0-10):</label>
+            <input type="number" step="0.01" id="economy" name="economy" class="border p-2 w-full" min="0" max="10" required>
+        </div>
+        <div>
+            <label for="ecology" class="block">Экология (0-10):</label>
+            <input type="number" step="0.01" id="ecology" name="ecology" class="border p-2 w-full" min="0" max="10" required>
+        </div>
+        <div>
+            <label for="dependency" class="block">Зависимость (0-10):</label>
+            <input type="number" step="0.01" id="dependency" name="dependency" class="border p-2 w-full" min="0" max="10" required>
+        </div>
+        <div>
+            <label for="social" class="block">Социальное (0-10):</label>
+            <input type="number" step="0.01" id="social" name="social" class="border p-2 w-full" min="0" max="10" required>
+        </div>
+        <div>
+            <label for="international" class="block">Международное (0-10):</label>
+            <input type="number" step="0.01" id="international" name="international" class="border p-2 w-full" min="0" max="10" required>
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Сохранить</button>
+    </form>
+    <script>
+        function validateForm() {
+            const scores = ['life_health', 'economy', 'ecology', 'dependency', 'social', 'international'];
+            for (let score of scores) {
+                const value = document.getElementById(score).value;
+                if (value < 0 || value > 10) {
+                    alert('Значения должны быть в диапазоне от 0 до 10!');
+                    return false;
+                }
+            }
+            return true;
+        }
+    </script>
+{% endblock %}

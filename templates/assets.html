@@ -1,0 +1,38 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Список активов</h2>
+    <a href="{{ url_for('add_asset') }}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">Добавить актив</a>
+    <table class="table-auto w-full mt-4">
+        <thead>
+            <tr>
+                <th class="px-4 py-2">Название</th>
+                <th class="px-4 py-2">Жизнь/Здоровье</th>
+                <th class="px-4 py-2">Экономика</th>
+                <th class="px-4 py-2">Экология</th>
+                <th class="px-4 py-2">Зависимость</th>
+                <th class="px-4 py-2">Социальное</th>
+                <th class="px-4 py-2">Международное</th>
+                <th class="px-4 py-2">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets %}
+                <tr>
+                    <td class="border px-4 py-2">{{ asset[1] }}</td>
+                    <td class="border px-4 py-2">{{ asset[2] }}</td>
+                    <td class="border px-4 py-2">{{ asset[3] }}</td>
+                    <td class="border px-4 py-2">{{ asset[4] }}</td>
+                    <td class="border px-4 py-2">{{ asset[5] }}</td>
+                    <td class="border px-4 py-2">{{ asset[6] }}</td>
+                    <td class="border px-4 py-2">{{ asset[7] }}</td>
+                    <td class="border px-4 py-2">
+                        <a href="{{ url_for('edit_asset', id=asset[0]) }}" class="text-blue-500 hover:underline">Редактировать</a> |
+                        <form action="{{ url_for('delete_asset', id=asset[0]) }}" method="POST" style="display:inline;" onsubmit="return confirm('Вы уверены, что хотите удалить этот актив?');">
+                            <button type="submit" class="text-red-500 hover:underline">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

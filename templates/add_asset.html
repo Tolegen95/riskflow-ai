@@ -1,0 +1,12 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Добавить актив</h2>
+    <form method="POST" action="{{ url_for('add_asset') }}" class="space-y-4">
+        <div>
+            <label for="name" class="block">Название:</label>
+            <input type="text" id="name" name="name" class="border p-2 w-full" required>
+        </div>
+        <p class="text-gray-600">Оценки критериев будут добавлены экспертами.</p>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Сохранить</button>
+    </form>
+{% endblock %}

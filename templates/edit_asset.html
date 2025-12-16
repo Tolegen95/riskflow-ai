@@ -1,0 +1,23 @@
+{% extends "index.html" %}
+{% block content %}
+    <h2 class="text-xl font-semibold mb-4">Редактировать актив</h2>
+    <form method="POST" action="{{ url_for('edit_asset', id=asset[0]) }}" class="space-y-4">
+        <div>
+            <label for="name" class="block">Название:</label>
+            <input type="text" id="name" name="name" class="border p-2 w-full" value="{{ asset[1] }}" required>
+        </div>
+        <div>
+            <p class="text-gray-600">Оценки критериев:</p>
+            <ul class="list-disc pl-5">
+                <li>Жизнь/Здоровье: {{ asset[2] | round(2) if asset[2] is not none else 'Не оценено' }}</li>
+                <li>Экономика: {{ asset[3] | round(2) if asset[3] is not none else 'Не оценено' }}</li>
+                <li>Экология: {{ asset[4] | round(2) if asset[4] is not none else 'Не оценено' }}</li>
+                <li>Зависимость: {{ asset[5] | round(2) if asset[5] is not none else 'Не оценено' }}</li>
+                <li>Социальное: {{ asset[6] | round(2) if asset[6] is not none else 'Не оценено' }}</li>
+                <li>Международное: {{ asset[7] | round(2) if asset[7] is not none else 'Не оценено' }}</li>
+            </ul>
+            <p class="text-gray-600">Оценки редактируются через раздел "Оценки активов".</p>
+        </div>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Сохранить изменения</button>
+    </form>
+{% endblock %}

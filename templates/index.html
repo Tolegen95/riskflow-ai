@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система оценки рисков</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 p-4">
+        <div class="flex justify-between items-center">
+            <ul class="flex space-x-4 text-white">
+                {% if session.get('role') == 'admin' %}
+                    <li><a href="{{ url_for('list_users') }}" class="hover:underline">Пользователи</a></li>
+                    <li><a href="{{ url_for('list_experts') }}" class="hover:underline">Эксперты</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('list_assets') }}" class="hover:underline">Активы</a></li>
+                <li><a href="{{ url_for('list_asset_evaluations') }}" class="hover:underline">Оценки активов</a></li>
+                <li><a href="{{ url_for('list_threat_probabilities') }}" class="hover:underline">Вероятности угроз</a></li>
+                {% if session.get('role') == 'admin' %}
+                    <li><a href="{{ url_for('list_risk_analysis') }}" class="hover:underline">Анализ рисков</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('criticality') }}" class="hover:underline">Критичность и риски</a></li>
+            </ul>
+            <div class="flex items-center space-x-4 text-white">
+                {% if session.get('username') %}
+                    <span>Пользователь: <strong>{{ session.get('username') }}</strong> ({{ 'Администратор' if session.get('role') == 'admin' else 'Эксперт' }})</span>
+                    <a href="{{ url_for('logout') }}" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Выход</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Вход</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <div class="container mx-auto p-4">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
