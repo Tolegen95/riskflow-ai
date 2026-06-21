@@ -3,46 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Система оценки рисков</title>
+    <title>CSIRT Process Model</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @media (min-width: 768px) {
+            .app-sidebar,
+            .app-main {
+                transition: width 160ms ease, margin-left 160ms ease;
+            }
+            body.sidebar-collapsed .app-sidebar {
+                width: 76px;
+            }
+            body.sidebar-collapsed .app-main {
+                margin-left: 76px;
+            }
+            body.sidebar-collapsed .sidebar-text,
+            body.sidebar-collapsed .sidebar-subtitle,
+            body.sidebar-collapsed .sidebar-user-details {
+                display: none;
+            }
+            body.sidebar-collapsed .sidebar-link {
+                text-align: center;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+                white-space: nowrap;
+                overflow: hidden;
+            }
+            body.sidebar-collapsed .sidebar-brand {
+                text-align: center;
+            }
+            .sidebar-collapsed-mark {
+                display: none;
+            }
+            body.sidebar-collapsed .sidebar-collapsed-mark {
+                display: inline;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-blue-600 p-4">
-        <div class="flex justify-between items-center">
-            <ul class="flex space-x-4 text-white">
+<body class="bg-gray-100 md:overflow-hidden">
+    <div class="min-h-screen md:h-screen md:flex">
+        <aside id="appSidebar" class="app-sidebar bg-blue-700 text-white md:w-72 md:h-screen md:fixed md:inset-y-0 md:left-0 md:overflow-y-auto">
+            <div class="p-5 border-b border-blue-500">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="sidebar-brand">
+                        <div class="text-lg font-semibold"><span class="sidebar-text">CSIRT Model</span><span class="sidebar-collapsed-mark">CM</span></div>
+                        <div class="text-sm text-blue-100 sidebar-subtitle">Incident Response Processes</div>
+                    </div>
+                    <button id="sidebarToggle" type="button" class="hidden md:inline-flex bg-blue-600 hover:bg-blue-500 rounded px-2 py-1 text-sm" title="Свернуть меню">☰</button>
+                </div>
+            </div>
+
+            <nav class="p-4 space-y-1">
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'dashboard' %}bg-blue-500{% endif %}" title="Дашборд">
+                    <span class="inline-block w-5 text-center flex-shrink-0">🏠</span><span class="sidebar-text ml-2">Дашборд</span>
+                </a>
+                <a href="{{ url_for('my_tasks') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'my_tasks' %}bg-blue-500{% endif %}" title="Мои задачи">
+                    <span class="inline-block w-5 text-center flex-shrink-0">✅</span><span class="sidebar-text ml-2">Мои задачи</span>
+                </a>
+
+                <div class="sidebar-text pt-4 pb-1 px-3 text-xs font-semibold text-blue-200 uppercase tracking-wider">Работа с рисками</div>
+                <a href="{{ url_for('list_companies') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint in ['list_companies'] %}bg-blue-500{% endif %}" title="Организации">
+                    <span class="inline-block w-5 text-center flex-shrink-0">🏢</span><span class="sidebar-text ml-2">Организации</span>
+                </a>
+                <a href="{{ url_for('list_processes') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint in ['list_processes', 'process_detail', 'add_process', 'edit_process'] %}bg-blue-500{% endif %}" title="Процессы">
+                    <span class="inline-block w-5 text-center flex-shrink-0">⚙️</span><span class="sidebar-text ml-2">Процессы</span>
+                </a>
+                <a href="{{ url_for('list_process_risks') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint in ['list_process_risks', 'add_process_risk', 'edit_process_risk'] %}bg-blue-500{% endif %}" title="Реестр пробелов">
+                    <span class="inline-block w-5 text-center flex-shrink-0">⚠️</span><span class="sidebar-text ml-2">Реестр пробелов</span>
+                </a>
+                <a href="{{ url_for('list_risk_treatments') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint in ['list_risk_treatments', 'add_risk_treatment', 'edit_risk_treatment'] %}bg-blue-500{% endif %}" title="Рекомендации">
+                    <span class="inline-block w-5 text-center flex-shrink-0">🛡️</span><span class="sidebar-text ml-2">Рекомендации</span>
+                </a>
+
+                <div class="sidebar-text pt-4 pb-1 px-3 text-xs font-semibold text-blue-200 uppercase tracking-wider">Аналитика</div>
+                <a href="{{ url_for('compliance_dashboard') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'compliance_dashboard' %}bg-blue-500{% endif %}" title="Нормативная база">
+                    <span class="inline-block w-5 text-center flex-shrink-0">📋</span><span class="sidebar-text ml-2">Нормативная база</span>
+                </a>
+                <a href="{{ url_for('responsibility_matrix') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'responsibility_matrix' %}bg-blue-500{% endif %}" title="Матрица ответственности">
+                    <span class="inline-block w-5 text-center flex-shrink-0">👥</span><span class="sidebar-text ml-2">Матрица ответственности</span>
+                </a>
+                <a href="{{ url_for('risk_workflow') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'risk_workflow' %}bg-blue-500{% endif %}" title="Workflow рисков">
+                    <span class="inline-block w-5 text-center flex-shrink-0">🔄</span><span class="sidebar-text ml-2">Workflow рисков</span>
+                </a>
+                <a href="{{ url_for('operational_analytics') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'operational_analytics' %}bg-blue-500{% endif %}" title="Операционная аналитика">
+                    <span class="inline-block w-5 text-center flex-shrink-0">📊</span><span class="sidebar-text ml-2">Операционная аналитика</span>
+                </a>
+                <a href="{{ url_for('methodology') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'methodology' %}bg-blue-500{% endif %}" title="Методика">
+                    <span class="inline-block w-5 text-center flex-shrink-0">📖</span><span class="sidebar-text ml-2">Методика</span>
+                </a>
+                <a href="{{ url_for('user_guide') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'user_guide' %}bg-blue-500{% endif %}" title="Руководство пользователя">
+                    <span class="inline-block w-5 text-center flex-shrink-0">📗</span><span class="sidebar-text ml-2">Руководство</span>
+                </a>
+
                 {% if session.get('role') == 'admin' %}
-                    <li><a href="{{ url_for('list_users') }}" class="hover:underline">Пользователи</a></li>
-                    <li><a href="{{ url_for('list_experts') }}" class="hover:underline">Эксперты</a></li>
+                    <div class="sidebar-text pt-4 pb-1 px-3 text-xs font-semibold text-blue-200 uppercase tracking-wider">Администрирование</div>
+                    <a href="{{ url_for('list_users') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint in ['list_users', 'add_user', 'edit_user'] %}bg-blue-500{% endif %}" title="Пользователи">
+                        <span class="inline-block w-5 text-center flex-shrink-0">👤</span><span class="sidebar-text ml-2">Пользователи</span>
+                    </a>
+                    <a href="{{ url_for('list_experts') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint in ['list_experts', 'add_expert', 'edit_expert'] %}bg-blue-500{% endif %}" title="Эксперты">
+                        <span class="inline-block w-5 text-center flex-shrink-0">🎓</span><span class="sidebar-text ml-2">Эксперты</span>
+                    </a>
+                    <a href="{{ url_for('data_quality') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'data_quality' %}bg-blue-500{% endif %}" title="Качество данных">
+                        <span class="inline-block w-5 text-center flex-shrink-0">🔍</span><span class="sidebar-text ml-2">Качество данных</span>
+                    </a>
+                    <a href="{{ url_for('audit_log') }}" class="sidebar-link flex items-center px-3 py-2 rounded hover:bg-blue-600 {% if request.endpoint == 'audit_log' %}bg-blue-500{% endif %}" title="Журнал аудита">
+                        <span class="inline-block w-5 text-center flex-shrink-0">📝</span><span class="sidebar-text ml-2">Журнал аудита</span>
+                    </a>
                 {% endif %}
-                <li><a href="{{ url_for('list_assets') }}" class="hover:underline">Активы</a></li>
-                <li><a href="{{ url_for('list_asset_evaluations') }}" class="hover:underline">Оценки активов</a></li>
-                <li><a href="{{ url_for('list_threat_probabilities') }}" class="hover:underline">Вероятности угроз</a></li>
-                {% if session.get('role') == 'admin' %}
-                    <li><a href="{{ url_for('list_risk_analysis') }}" class="hover:underline">Анализ рисков</a></li>
-                {% endif %}
-                <li><a href="{{ url_for('criticality') }}" class="hover:underline">Критичность и риски</a></li>
-            </ul>
-            <div class="flex items-center space-x-4 text-white">
+            </nav>
+
+            <div class="p-4 border-t border-blue-500 md:absolute md:bottom-0 md:left-0 md:right-0">
                 {% if session.get('username') %}
-                    <span>Пользователь: <strong>{{ session.get('username') }}</strong> ({{ 'Администратор' if session.get('role') == 'admin' else 'Эксперт' }})</span>
-                    <a href="{{ url_for('logout') }}" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">Выход</a>
+                    <div class="sidebar-user-details">
+                        <div class="text-sm text-blue-100">Пользователь</div>
+                        <div class="font-semibold mb-3">{{ session.get('username') }}</div>
+                        <div class="text-sm text-blue-100 mb-4">{{ session.get('role') | role_label }}</div>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="block bg-red-500 hover:bg-red-600 text-center px-4 py-2 rounded" title="Выход"><span class="sidebar-text">Выход</span><span class="sidebar-collapsed-mark">↩</span></a>
                 {% else %}
-                    <a href="{{ url_for('login') }}" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded">Вход</a>
+                    <a href="{{ url_for('login') }}" class="block bg-green-500 hover:bg-green-600 text-center px-4 py-2 rounded">Вход</a>
                 {% endif %}
             </div>
-        </div>
-    </nav>
-    <div class="container mx-auto p-4">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
-                    {% for message in messages %}
-                        <p>{{ message }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-        {% block content %}{% endblock %}
+        </aside>
+
+        <main id="appMain" class="app-main flex-1 md:ml-72 md:h-screen md:overflow-auto">
+            <div class="p-4 md:p-6 min-w-0 max-w-full">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+                            {% for message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
     </div>
+    <script>
+        (() => {
+            const toggle = document.getElementById('sidebarToggle');
+            const collapsedClass = 'sidebar-collapsed';
+            const saved = localStorage.getItem('riskflow_sidebar_collapsed');
+            if (saved === '1') document.body.classList.add(collapsedClass);
+            if (!toggle) return;
+            toggle.addEventListener('click', () => {
+                document.body.classList.toggle(collapsedClass);
+                localStorage.setItem('riskflow_sidebar_collapsed', document.body.classList.contains(collapsedClass) ? '1' : '0');
+            });
+        })();
+    </script>
 </body>
 </html>

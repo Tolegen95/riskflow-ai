@@ -1,0 +1,341 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .process-page { max-width: 1200px; }
+    .process-hero,
+    .process-card,
+    .process-details {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 14px;
+    }
+    .process-hero {
+        border-left: 4px solid #2563eb;
+        padding: 16px;
+    }
+    .process-title {
+        color: #0f172a;
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+    .process-subtitle {
+        color: #475569;
+        margin-top: 6px;
+    }
+    .process-actions,
+    .process-next-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .process-btn {
+        background: #2563eb;
+        border-radius: 4px;
+        color: #ffffff;
+        display: inline-block;
+        font-weight: 700;
+        padding: 8px 12px;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    .process-btn.secondary { background: #475569; }
+    .process-btn.green { background: #059669; }
+    .process-btn.purple { background: #7c3aed; }
+    .process-btn.red { background: #dc2626; }
+    .process-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .process-card { padding: 14px; }
+    .process-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .process-value {
+        color: #0f172a;
+        font-size: 20px;
+        font-weight: 800;
+        margin-top: 4px;
+    }
+    .process-text {
+        color: #475569;
+        font-size: 14px;
+        margin-top: 4px;
+    }
+    .process-details summary {
+        cursor: pointer;
+        font-weight: 800;
+        padding: 13px 14px;
+    }
+    .process-details-body {
+        border-top: 1px solid #e2e8f0;
+        padding: 14px;
+    }
+    .process-scroll { max-width: 100%; overflow-x: auto; }
+    .process-table {
+        border-collapse: collapse;
+        font-size: 14px;
+        min-width: 760px;
+        width: 100%;
+    }
+    .process-table th,
+    .process-table td {
+        border: 1px solid #e2e8f0;
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+    }
+    .process-table th {
+        background: #f8fafc;
+        color: #334155;
+        white-space: nowrap;
+    }
+    .simple-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .simple-form input,
+    .simple-form select {
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        padding: 8px;
+    }
+    .simple-form .grow { flex: 1 1 220px; }
+    .quality-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-top: 12px;
+        padding: 12px;
+    }
+    .quality-score {
+        color: #0f172a;
+        font-size: 28px;
+        font-weight: 800;
+    }
+</style>
+
+{% set critical_count = namespace(value=0) %}
+{% for risk in risks %}
+    {% if risk[10] == 'Высокий' %}{% set critical_count.value = critical_count.value + 1 %}{% endif %}
+{% endfor %}
+
+<div class="process-page">
+    <section class="process-hero">
+        <div class="process-title">{{ process[2] }}</div>
+        <div class="process-subtitle">
+            {{ process[10] }}{% if process[4] %} · {{ process[4] }}{% endif %}
+        </div>
+        {% if process[3] %}
+            <div class="process-text">{{ process[3] }}</div>
+        {% endif %}
+        <div class="process-actions">
+            <a href="{{ url_for('methodology') }}" class="process-btn secondary">К методике</a>
+            <a href="{{ url_for('list_processes') }}" class="process-btn secondary">Все процессы</a>
+            <a href="{{ url_for('process_report', process_id=process[0]) }}" class="process-btn green">Отчет</a>
+            <a href="{{ url_for('ai_analysis', process_id=process[0]) }}" class="process-btn purple">AI-анализ</a>
+        </div>
+    </section>
+
+    <div class="process-grid">
+        <section class="process-card">
+            <div class="process-label">Владелец процесса</div>
+            <div class="process-value">{{ process[5] or '-' }}</div>
+        </section>
+        <section class="process-card">
+            <div class="process-label">Подпроцессы</div>
+            <div class="process-value">{{ subprocesses | length }}</div>
+            <div class="process-text">Декомпозиция процесса реагирования.</div>
+        </section>
+        <section class="process-card">
+            <div class="process-label">Пробелы</div>
+            <div class="process-value">{{ risks | length }}</div>
+            <div class="process-text">Критичных: {{ critical_count.value }}</div>
+        </section>
+        <section class="process-card">
+            <div class="process-label">BPMN</div>
+            <div class="process-value">{{ 'Есть' if bpmn_model else 'Нет' }}</div>
+            {% if bpmn_quality %}<div class="process-text">Качество модели: {{ bpmn_quality.score }}%</div>{% endif %}
+        </section>
+    </div>
+
+    <section class="process-card">
+        <div class="process-label">Что показать на защите по этому процессу</div>
+        <div class="process-text">
+            1. Назначение процесса и его владелец. 2. Подпроцессы реагирования. 3. Основные пробелы.
+            4. Рекомендации по улучшению и нормативные связи.
+        </div>
+        <div class="process-next-actions">
+            {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('add_subprocess', process_id=process[0]) }}" class="process-btn">Добавить подпроцесс</a>
+                <a href="{{ url_for('add_process_risk', process_id=process[0]) }}" class="process-btn">Добавить пробел</a>
+                <a href="{{ url_for('edit_process_bpmn', process_id=process[0]) }}" class="process-btn secondary">Редактировать BPMN</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <details class="process-details" open>
+        <summary>Краткое описание процесса</summary>
+        <div class="process-details-body">
+            <div class="process-grid">
+                <section class="process-card">
+                    <div class="process-label">Входы</div>
+                    <div class="process-text">{{ process[6] or '-' }}</div>
+                </section>
+                <section class="process-card">
+                    <div class="process-label">Выходы</div>
+                    <div class="process-text">{{ process[7] or '-' }}</div>
+                </section>
+                <section class="process-card">
+                    <div class="process-label">Регуляторы</div>
+                    <div class="process-text">{{ process[8] or '-' }}</div>
+                </section>
+                <section class="process-card">
+                    <div class="process-label">Ресурсы</div>
+                    <div class="process-text">{{ process[9] or '-' }}</div>
+                </section>
+            </div>
+        </div>
+    </details>
+
+    <details class="process-details" open>
+        <summary>Подпроцессы реагирования</summary>
+        <div class="process-details-body">
+            <div class="process-scroll">
+                <table class="process-table">
+                    <thead><tr><th>#</th><th>Название</th><th>Ответственный</th><th>Системы</th><th>Действия</th></tr></thead>
+                    <tbody>
+                        {% for sp in subprocesses %}
+                            <tr>
+                                <td>{{ sp[7] or loop.index }}</td>
+                                <td>{{ sp[1] }}</td>
+                                <td>{{ sp[5] or '' }}</td>
+                                <td>{{ sp[6] or '' }}</td>
+                                <td>
+                                    {% if session.get('role') == 'admin' %}
+                                        <a href="{{ url_for('edit_subprocess', id=sp[0]) }}" class="text-blue-600">Редактировать</a>
+                                        <form action="{{ url_for('delete_subprocess', id=sp[0]) }}" method="POST" style="display:inline;">
+                                            <button class="text-red-600" type="submit">Удалить</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="text-gray-500">Подпроцессы пока не добавлены.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </details>
+
+    <details class="process-details" open>
+        <summary>Пробелы процесса</summary>
+        <div class="process-details-body">
+            <div class="process-scroll">
+                <table class="process-table">
+                    <thead>
+                        <tr><th>Подпроцесс</th><th>Пробел / сценарий</th><th>Остаточная оценка</th><th>Приоритет</th><th>Статус</th><th>Действия</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for risk in risks %}
+                            <tr>
+                                <td>{{ risk[1] or '' }}</td>
+                                <td>{{ risk[3] or risk[11] or '' }}</td>
+                                <td>{{ risk[9] | risk_number }}</td>
+                                <td>{{ risk[10] }}</td>
+                                <td>{{ risk[14] or '' }}</td>
+                                <td>
+                                    {% if can_edit_risks %}
+                                        <a href="{{ url_for('edit_process_risk', id=risk[0]) }}" class="text-blue-600">Редактировать</a>
+                                    {% endif %}
+                                    {% if session.get('role') == 'admin' %}
+                                        <a href="{{ url_for('add_risk_treatment', process_risk_id=risk[0]) }}" class="text-green-700 block">Добавить рекомендацию</a>
+                                        <form action="{{ url_for('delete_process_risk', id=risk[0]) }}" method="POST" style="display:inline;">
+                                            <button class="text-red-600" type="submit">Удалить</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6" class="text-gray-500">Пробелы процесса пока не описаны.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </details>
+
+    <details class="process-details">
+        <summary>BPMN-диаграмма и качество модели</summary>
+        <div class="process-details-body">
+            {% if bpmn_model %}
+                {% include "_bpmn_viewer.html" %}
+                {% if bpmn_quality %}
+                    <div class="quality-box">
+                        <div class="process-label">Проверка BPMN</div>
+                        <div class="quality-score">{{ bpmn_quality.score }}%</div>
+                        <div class="process-text">
+                            Пройдено проверок: {{ bpmn_quality.passed_checks }}/{{ bpmn_quality.total_checks }}.
+                            <br>
+                            Узлы: {{ bpmn_quality.node_count }},
+                            связи: {{ bpmn_quality.edge_count }},
+                            связанные шаги: {{ bpmn_quality.linked_task_count }}/{{ bpmn_quality.task_count }},
+                            покрытие шагов процесса: {{ bpmn_quality.subprocess_coverage }}%.
+                        </div>
+                        {% if bpmn_quality.issues %}
+                            <div class="process-text">
+                                {% for issue in bpmn_quality.issues[:3] %}
+                                    <div><strong>{{ issue.title }}:</strong> {{ issue.detail }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="text-gray-600">BPMN JSON пока не задан.</p>
+            {% endif %}
+        </div>
+    </details>
+
+    <details class="process-details">
+        <summary>Технические связи BPMN с пробелами</summary>
+        <div class="process-details-body">
+            {% if bpmn_business_context and bpmn_business_context['items'] %}
+                <div class="process-scroll">
+                    <table class="process-table">
+                        <thead><tr><th>BPMN-узел</th><th>Подпроцесс</th><th>Пробелы</th><th>Рекомендация</th></tr></thead>
+                        <tbody>
+                            {% for item in bpmn_business_context['items'] %}
+                                <tr>
+                                    <td>{{ item.node_label }} <span class="text-gray-500">({{ item.node_type }})</span></td>
+                                    <td>{{ item.subprocess.name if item.subprocess else 'Не связан' }}</td>
+                                    <td>
+                                        {% for risk in item.risks[:2] %}
+                                            <div>{{ risk.description or risk.threat_name }} - {{ risk.risk_category }}</div>
+                                        {% else %}
+                                            <span class="text-gray-500">Нет пробелов</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{% if item.risks %}{{ item.risks[0].ai_recommendation }}{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-gray-600">BPMN пока не связан с подпроцессами и пробелами.</p>
+            {% endif %}
+        </div>
+    </details>
+</div>
+{% endblock %}

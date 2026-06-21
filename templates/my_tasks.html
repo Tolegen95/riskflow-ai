@@ -1,0 +1,125 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .tasks-section { background:white; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:16px; }
+    .tasks-header { padding:12px 14px; border-bottom:1px solid #e2e8f0; }
+    .tasks-body { padding:14px; }
+    .tasks-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:16px; }
+    .tasks-kpi { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; }
+    .tasks-kpi-value { font-size:24px; font-weight:800; color:#0f172a; }
+    .tasks-kpi-label { color:#64748b; font-size:12px; font-weight:700; text-transform:uppercase; }
+    .tasks-scroll { max-width:100%; overflow-x:auto; }
+    .tasks-table { width:100%; min-width:980px; border-collapse:collapse; font-size:14px; }
+    .tasks-table th, .tasks-table td { border:1px solid #e2e8f0; padding:8px 10px; text-align:left; vertical-align:top; }
+    .tasks-table th { background:#f8fafc; color:#334155; white-space:nowrap; }
+    .tasks-badge { display:inline-block; border-radius:4px; padding:2px 8px; font-size:12px; font-weight:700; white-space:nowrap; background:#f1f5f9; color:#475569; }
+    .status-draft     { background:#f1f5f9; color:#475569; }
+    .status-inreview  { background:#eff6ff; color:#1d4ed8; }
+    .status-approved  { background:#ecfdf5; color:#065f46; }
+    .status-inprogress{ background:#fef3c7; color:#92400e; }
+    .status-closed    { background:#f0fdf4; color:#166534; }
+    .status-returned  { background:#fff7ed; color:#c2410c; }
+    .tasks-overdue { color:#b91c1c; font-weight:700; }
+</style>
+
+<div class="tasks-section">
+    <div class="tasks-header">
+        <h2 class="text-xl font-semibold">Мои задачи</h2>
+        <p class="text-sm text-gray-600">Что ожидает действия от вашей роли: согласования, экспертные оценки и меры обработки.</p>
+    </div>
+    <div class="tasks-body">
+        <div class="tasks-kpis">
+            <div class="tasks-kpi"><div class="tasks-kpi-value">{{ tasks.summary.workflow }}</div><div class="tasks-kpi-label">Workflow</div></div>
+            <div class="tasks-kpi"><div class="tasks-kpi-value">{{ tasks.summary.expert }}</div><div class="tasks-kpi-label">Экспертные оценки</div></div>
+            <div class="tasks-kpi"><div class="tasks-kpi-value">{{ tasks.summary.treatments }}</div><div class="tasks-kpi-label">Меры обработки</div></div>
+            <div class="tasks-kpi"><div class="tasks-kpi-value">{{ tasks.summary.overdue_treatments }}</div><div class="tasks-kpi-label">Просрочено</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="tasks-section">
+    <div class="tasks-header"><h3 class="font-semibold">Workflow-задачи</h3></div>
+    <div class="tasks-body tasks-scroll">
+        <table class="tasks-table">
+            <thead><tr><th>Процесс</th><th>Риск</th><th>Residual</th><th>Уровень</th><th>Статус</th><th>Действия</th></tr></thead>
+            <tbody>
+                {% for item in tasks.workflow_tasks %}
+                    {% set risk = item.risk %}
+                    <tr>
+                        <td>{{ risk[1] }}{% if risk[2] %}<br><span class="text-gray-500">{{ risk[2] }}</span>{% endif %}</td>
+                        <td>{{ risk[23] or '' }}</td>
+                        <td>{{ risk[8] | risk_number }}</td>
+                        <td>{{ risk[9] or '' }}</td>
+                        <td>
+                            {% set s = risk[15] %}
+                            <span class="tasks-badge {{ 'status-draft' if s == 'Draft' else 'status-inreview' if s == 'In Review' else 'status-approved' if s == 'Approved' else 'status-inprogress' if s == 'In Progress' else 'status-closed' if s == 'Closed' else 'status-returned' if s == 'Returned' else '' }}">{{ s }}</span>
+                        </td>
+                        <td>
+                            {% for action_key, action_label in item.actions %}
+                                <form action="{{ url_for('process_risk_workflow_action', id=risk[0]) }}" method="POST" class="mb-2">
+                                    <input type="hidden" name="action" value="{{ action_key }}">
+                                    <input name="comment" class="border rounded px-2 py-1 text-xs w-full mb-1" placeholder="Комментарий">
+                                    <button type="submit" class="text-slate-700 underline text-left">{{ action_label }}</button>
+                                </form>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-gray-500">Нет workflow-задач для вашей роли.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tasks-section">
+    <div class="tasks-header"><h3 class="font-semibold">Экспертные оценки</h3></div>
+    <div class="tasks-body tasks-scroll">
+        <table class="tasks-table">
+            <thead><tr><th>Процесс</th><th>Риск</th><th>Residual</th><th>Уровень</th><th>Статус</th><th>Действие</th></tr></thead>
+            <tbody>
+                {% for risk in tasks.expert_tasks %}
+                    <tr>
+                        <td>{{ risk[1] }}{% if risk[2] %}<br><span class="text-gray-500">{{ risk[2] }}</span>{% endif %}</td>
+                        <td>{{ risk[3] or '' }}</td>
+                        <td>{{ risk[4] | risk_number }}</td>
+                        <td>{{ risk[5] or '' }}</td>
+                        <td>
+                            {% set s = risk[6] %}
+                            <span class="tasks-badge {{ 'status-draft' if s == 'Draft' else 'status-inreview' if s == 'In Review' else 'status-approved' if s == 'Approved' else 'status-inprogress' if s == 'In Progress' else 'status-closed' if s == 'Closed' else 'status-returned' if s == 'Returned' else '' }}">{{ s }}</span>
+                        </td>
+                        <td><a href="{{ url_for('edit_process_risk', id=risk[0]) }}" class="text-purple-600">Оценить</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-gray-500">Нет ожидающих экспертных оценок.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tasks-section">
+    <div class="tasks-header"><h3 class="font-semibold">Меры обработки</h3></div>
+    <div class="tasks-body tasks-scroll">
+        <table class="tasks-table">
+            <thead><tr><th>Мера</th><th>Процесс</th><th>Owner</th><th>Due</th><th>Прогресс</th><th>Статус</th><th>Risk</th><th>Действие</th></tr></thead>
+            <tbody>
+                {% for item in tasks.treatment_tasks %}
+                    <tr>
+                        <td>{{ item[1] }}</td>
+                        <td>{{ item[2] }}{% if item[3] %}<br><span class="text-gray-500">{{ item[3] }}</span>{% endif %}</td>
+                        <td>{{ item[4] or '-' }}</td>
+                        <td class="{{ 'tasks-overdue' if item[10] else '' }}">{{ item[5] or '-' }}</td>
+                        <td>{{ item[6] or 0 }}%</td>
+                        <td><span class="tasks-badge">{{ item[7] }}</span></td>
+                        <td>{{ item[8] | risk_number }}</td>
+                        <td><a href="{{ url_for('edit_risk_treatment', id=item[0]) }}" class="text-blue-600">Открыть</a></td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="8" class="text-gray-500">Нет активных мер обработки.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

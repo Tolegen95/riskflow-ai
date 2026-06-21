@@ -1,0 +1,1041 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .bpmn-editor-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 16px;
+        align-items: start;
+    }
+    .bpmn-toolbar,
+    .bpmn-panel {
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 12px;
+    }
+    .bpmn-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .bpmn-tool {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background: #f8fafc;
+        color: #0f172a;
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+    .bpmn-tool:hover,
+    .bpmn-tool.active {
+        border-color: #2563eb;
+        background: #dbeafe;
+    }
+    .bpmn-editor-canvas {
+        position: relative;
+        min-height: 560px;
+        overflow: auto;
+        background:
+            linear-gradient(#e2e8f0 1px, transparent 1px),
+            linear-gradient(90deg, #e2e8f0 1px, transparent 1px),
+            #f8fafc;
+        background-size: 24px 24px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+    }
+    .bpmn-editor-stage {
+        position: relative;
+        width: 1600px;
+        height: 900px;
+    }
+    .bpmn-editor-svg {
+        position: absolute;
+        inset: 0;
+        width: 1600px;
+        height: 900px;
+        pointer-events: auto;
+        z-index: 1;
+    }
+    .bpmn-editor-node {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        user-select: none;
+        cursor: move;
+        color: #0f172a;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.2;
+        padding: 8px;
+        border: 2px solid #2563eb;
+        background: white;
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+        z-index: 2;
+    }
+    .bpmn-editor-node.task {
+        width: 150px;
+        height: 74px;
+        border-radius: 8px;
+    }
+    .bpmn-editor-node.start,
+    .bpmn-editor-node.end {
+        width: 78px;
+        height: 78px;
+        border-radius: 999px;
+    }
+    .bpmn-editor-node.start {
+        border-color: #059669;
+        background: #ecfdf5;
+    }
+    .bpmn-editor-node.end {
+        border-color: #dc2626;
+        border-width: 4px;
+        background: #fef2f2;
+    }
+    .bpmn-editor-node.gateway {
+        width: 82px;
+        height: 82px;
+        border-color: #d97706;
+        background: #fffbeb;
+        transform: rotate(45deg);
+    }
+    .bpmn-editor-node.gateway span {
+        transform: rotate(-45deg);
+        max-width: 68px;
+    }
+    .bpmn-editor-node.selected {
+        outline: 3px solid #38bdf8;
+        outline-offset: 3px;
+    }
+    .bpmn-editor-node.risk-low {
+        background: #bbf7d0;
+        border-color: #047857;
+        border-width: 3px;
+    }
+    .bpmn-editor-node.risk-medium {
+        background: #fde68a;
+        border-color: #b45309;
+        border-width: 3px;
+    }
+    .bpmn-editor-node.risk-high {
+        background: #fecaca;
+        border-color: #b91c1c;
+        border-width: 4px;
+    }
+    .bpmn-editor-node.connecting {
+        outline: 3px solid #f59e0b;
+        outline-offset: 3px;
+    }
+    .bpmn-edge-line {
+        fill: none;
+        stroke: #334155;
+        stroke-width: 3;
+        pointer-events: stroke;
+        cursor: pointer;
+    }
+    .bpmn-edge-line.selected {
+        stroke: #0ea5e9;
+        stroke-width: 5;
+    }
+    .bpmn-edge-text {
+        fill: #334155;
+        font-size: 12px;
+        font-weight: 700;
+        text-anchor: middle;
+        paint-order: stroke;
+        stroke: #f8fafc;
+        stroke-width: 5px;
+    }
+    .bpmn-field {
+        display: block;
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 8px;
+        margin-top: 4px;
+    }
+    .bpmn-small-label {
+        display: block;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+    .bpmn-edge-list {
+        max-height: 190px;
+        overflow: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        margin-top: 8px;
+    }
+    .bpmn-edge-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 7px 8px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 13px;
+    }
+    .bpmn-edge-row.selected {
+        background: #e0f2fe;
+    }
+    .bpmn-edge-row:last-child {
+        border-bottom: 0;
+    }
+    .bpmn-muted {
+        color: #64748b;
+        font-size: 13px;
+    }
+    .bpmn-check-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .bpmn-check-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 8px;
+        font-size: 13px;
+        background: #f8fafc;
+    }
+    .bpmn-check-item.error {
+        border-color: #fecaca;
+        background: #fef2f2;
+        color: #991b1b;
+    }
+    .bpmn-check-item.warning {
+        border-color: #fde68a;
+        background: #fffbeb;
+        color: #92400e;
+    }
+    .bpmn-check-item.ok {
+        border-color: #bbf7d0;
+        background: #f0fdf4;
+        color: #166534;
+    }
+    @media (max-width: 1000px) {
+        .bpmn-editor-shell {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="flex items-center justify-between mb-3">
+    <div>
+        <h2 class="text-xl font-semibold">BPMN-редактор: {{ process[1] }}</h2>
+    </div>
+    <a href="{{ url_for('process_detail', id=process[0]) }}" class="bg-gray-500 text-white px-4 py-2 rounded text-sm">← Назад</a>
+</div>
+
+<div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 14px; margin-bottom:12px; font-size:13px; color:#1e40af;">
+    <strong>Как работать:</strong>
+    1. Нажмите кнопку типа узла → он появится на холсте.
+    2. Кликните «Связать» → выберите источник → выберите цель.
+    3. Кликните «Собрать из подпроцессов» — автоматически создаст схему из подпроцессов.
+    4. Нажмите «Сохранить BPMN».
+</div>
+
+<form method="POST" id="bpmnForm" class="space-y-4">
+    <textarea id="bpmnJson" name="bpmn_json" class="hidden">{{ bpmn[1] if bpmn else '{"nodes":[],"edges":[]}' }}</textarea>
+
+    <div class="bpmn-toolbar">
+        <span style="font-size:12px;color:#64748b;font-weight:700;align-self:center;">Добавить:</span>
+        <button class="bpmn-tool" type="button" data-add-node="start" title="Стартовое событие">🟢 Старт</button>
+        <button class="bpmn-tool" type="button" data-add-node="task" title="Задача / шаг процесса">📋 Задача</button>
+        <button class="bpmn-tool" type="button" data-add-node="gateway" title="Точка ветвления">🔀 Шлюз</button>
+        <button class="bpmn-tool" type="button" data-add-node="end" title="Конечное событие">🔴 Финиш</button>
+        <span style="width:1px;background:#e2e8f0;margin:0 4px;"></span>
+        <button class="bpmn-tool" type="button" id="connectModeBtn" title="Режим соединения узлов стрелкой">🔗 Связать</button>
+        <button class="bpmn-tool" type="button" id="deleteBtn" title="Удалить выбранный узел или связь">🗑 Удалить</button>
+        <button class="bpmn-tool" type="button" id="autoLayoutBtn" title="Автоматически расположить узлы">↔ Разложить</button>
+        <span style="width:1px;background:#e2e8f0;margin:0 4px;"></span>
+        <button class="bpmn-tool" type="button" id="createFromSubprocessesBtn" title="Автоматически создать схему из подпроцессов">⚡ Из подпроцессов</button>
+        <button class="bpmn-tool" type="button" id="autoBindBtn" title="Автоматически привязать узлы к подпроцессам по названию">🎯 Автопривязка</button>
+        <button class="bpmn-tool" type="button" id="validateBtn" title="Проверить корректность схемы">✔ Проверить</button>
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-semibold" type="submit">💾 Сохранить</button>
+    </div>
+
+    <div class="bpmn-editor-shell">
+        <div class="bpmn-editor-canvas" id="editorCanvas">
+            <div class="bpmn-editor-stage" id="editorStage">
+                <svg class="bpmn-editor-svg" id="edgeSvg">
+                    <defs>
+                        <marker id="editor-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+                            <path d="M 0 0 L 10 4 L 0 8 z" fill="#475569"></path>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+
+        <aside class="bpmn-panel">
+            <h3 class="text-lg font-semibold">Свойства узла</h3>
+            <p class="bpmn-muted mt-1" id="selectionHint">👆 Кликните на узел, чтобы редактировать его.</p>
+
+            <div id="nodeEditor" class="hidden">
+                <label class="bpmn-small-label">ID</label>
+                <input class="bpmn-field bg-gray-100" id="nodeId" readonly>
+
+                <label class="bpmn-small-label">Тип</label>
+                <select class="bpmn-field" id="nodeType">
+                    <option value="start">start</option>
+                    <option value="task">task</option>
+                    <option value="gateway">gateway</option>
+                    <option value="end">end</option>
+                </select>
+
+                <label class="bpmn-small-label">Название</label>
+                <input class="bpmn-field" id="nodeLabel" placeholder="Название шага">
+
+                <label class="bpmn-small-label">Связанный подпроцесс</label>
+                <select class="bpmn-field" id="nodeSubprocess">
+                    <option value="">Не связан</option>
+                    {% for subprocess in subprocesses %}
+                        <option value="{{ subprocess[0] }}">{{ subprocess[1] }}</option>
+                    {% endfor %}
+                </select>
+                <p class="bpmn-muted mt-2" id="nodeRiskHint"></p>
+                <div class="mt-3 text-sm" id="nodeBusinessDetails"></div>
+            </div>
+
+            <div class="mt-5">
+                <h4 class="font-semibold">Связи</h4>
+                <p class="bpmn-muted">В режиме «Связать» нажмите исходный узел, затем целевой.</p>
+                <div class="bpmn-edge-list" id="edgeList"></div>
+            </div>
+
+            <div class="mt-5">
+                <h4 class="font-semibold">Проверка модели</h4>
+                <p class="bpmn-muted">BPMN должен покрывать реальные подпроцессы и иметь связный поток.</p>
+                <div class="bpmn-check-list" id="validationList"></div>
+            </div>
+
+            <div id="edgeEditor" class="hidden mt-5">
+                <h4 class="font-semibold">Редактирование связи</h4>
+
+                <label class="bpmn-small-label">Откуда</label>
+                <select class="bpmn-field" id="edgeFrom"></select>
+
+                <label class="bpmn-small-label">Куда</label>
+                <select class="bpmn-field" id="edgeTo"></select>
+
+                <label class="bpmn-small-label">Подпись</label>
+                <input class="bpmn-field" id="edgeLabel" placeholder="Да, Нет, условие...">
+
+                <div class="flex gap-2 mt-3">
+                    <button class="bpmn-tool" type="button" id="clearEdgeSelectionBtn">Снять выбор</button>
+                    <button class="bpmn-tool text-red-700" type="button" id="deleteEdgeBtn">Удалить связь</button>
+                </div>
+            </div>
+
+            <details class="mt-5">
+                <summary class="cursor-pointer text-blue-700 font-semibold">JSON</summary>
+                <textarea id="rawJsonEditor" rows="12" class="bpmn-field font-mono text-xs"></textarea>
+                <button class="bpmn-tool mt-2" type="button" id="applyRawJsonBtn">Применить JSON</button>
+            </details>
+        </aside>
+    </div>
+</form>
+
+<div class="mt-8">
+    <h3 class="text-lg font-semibold mb-2">Сохраненный предпросмотр</h3>
+    {% include "_bpmn_viewer.html" %}
+</div>
+
+<script>
+(() => {
+    const textarea = document.getElementById('bpmnJson');
+    const rawJsonEditor = document.getElementById('rawJsonEditor');
+    const stage = document.getElementById('editorStage');
+    const svg = document.getElementById('edgeSvg');
+    const form = document.getElementById('bpmnForm');
+    const nodeEditor = document.getElementById('nodeEditor');
+    const selectionHint = document.getElementById('selectionHint');
+    const nodeId = document.getElementById('nodeId');
+    const nodeType = document.getElementById('nodeType');
+    const nodeLabel = document.getElementById('nodeLabel');
+    const nodeSubprocess = document.getElementById('nodeSubprocess');
+    const nodeRiskHint = document.getElementById('nodeRiskHint');
+    const nodeBusinessDetails = document.getElementById('nodeBusinessDetails');
+    const edgeList = document.getElementById('edgeList');
+    const edgeEditor = document.getElementById('edgeEditor');
+    const edgeFrom = document.getElementById('edgeFrom');
+    const edgeTo = document.getElementById('edgeTo');
+    const edgeLabel = document.getElementById('edgeLabel');
+    const connectModeBtn = document.getElementById('connectModeBtn');
+    const subprocessRisk = {{ bpmn_subprocess_risks | tojson }};
+    const businessContext = {{ bpmn_business_context.by_subprocess | tojson }};
+    const subprocessTemplates = [
+        {% for subprocess in subprocesses %}
+            {
+                id: {{ subprocess[0] }},
+                name: {{ subprocess[1] | tojson }},
+                risk: {{ bpmn_subprocess_risks.get(subprocess[0] | string, {}) | tojson }}
+            }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    let model = safeParse(textarea.value);
+    let selectedNodeId = null;
+    let selectedEdgeIndex = null;
+    let connectMode = false;
+    let connectFrom = null;
+    let dragState = null;
+
+    function safeParse(value) {
+        try {
+            const parsed = JSON.parse(value || '{}');
+            return {
+                nodes: Array.isArray(parsed.nodes) ? parsed.nodes : [],
+                edges: Array.isArray(parsed.edges) ? parsed.edges : []
+            };
+        } catch {
+            return {nodes: [], edges: []};
+        }
+    }
+
+    function nodeSize(node) {
+        if (node.type === 'start' || node.type === 'end') return {width: 78, height: 78};
+        if (node.type === 'gateway') return {width: 82, height: 82};
+        return {width: 150, height: 74};
+    }
+
+    function normalizeModel() {
+        model.nodes.forEach((node, index) => {
+            node.id = node.id || `node_${Date.now()}_${index}`;
+            node.type = node.type || 'task';
+            node.label = node.label || node.name || node.id;
+            if (node.subprocess_id === '') node.subprocess_id = null;
+            if (node.subprocess_id === undefined) {
+                const inferredSubprocessId = inferSubprocessId(node);
+                if (inferredSubprocessId) node.subprocess_id = inferredSubprocessId;
+            }
+            if (node.x === undefined) node.x = 80 + index * 190;
+            if (node.y === undefined) node.y = 220;
+            const size = nodeSize(node);
+            node.width = size.width;
+            node.height = size.height;
+        });
+        const ids = new Set(model.nodes.map(node => node.id));
+        model.edges = model.edges.filter(edge => ids.has(edge.from) && ids.has(edge.to) && edge.from !== edge.to);
+        if (selectedEdgeIndex !== null && !model.edges[selectedEdgeIndex]) selectedEdgeIndex = null;
+    }
+
+    function syncJson() {
+        normalizeModel();
+        const json = JSON.stringify(model, null, 2);
+        textarea.value = json;
+        rawJsonEditor.value = json;
+    }
+
+    function getNode(id) {
+        return model.nodes.find(node => node.id === id);
+    }
+
+    function matchTokens(value) {
+        return String(value || '')
+            .toLowerCase()
+            .replace(/[-_]/g, ' ')
+            .split(/\s+/)
+            .map(token => token.replace(/[^\p{L}\p{N}]/gu, ''))
+            .filter(token => token.length >= 4);
+    }
+
+    function inferSubprocessId(node) {
+        if (node.type === 'start' || node.type === 'end') return null;
+        const labelTokens = matchTokens(node.label || node.name || node.id);
+        let bestId = null;
+        let bestScore = 0;
+        Object.entries(subprocessRisk).forEach(([subprocessId, risk]) => {
+            const nameTokens = matchTokens(risk.name);
+            let score = 0;
+            labelTokens.forEach(labelToken => {
+                nameTokens.forEach(nameToken => {
+                    if (
+                        labelToken === nameToken ||
+                        labelToken.startsWith(nameToken.slice(0, 5)) ||
+                        nameToken.startsWith(labelToken.slice(0, 5))
+                    ) {
+                        score += 1;
+                    }
+                });
+            });
+            if (score > bestScore) {
+                bestScore = score;
+                bestId = subprocessId;
+            }
+        });
+        return bestScore ? Number(bestId) : null;
+    }
+
+    function render() {
+        normalizeModel();
+        stage.querySelectorAll('.bpmn-editor-node').forEach(node => node.remove());
+        svg.querySelectorAll('.bpmn-edge-line,.bpmn-edge-text').forEach(edge => edge.remove());
+
+        model.edges.forEach((edge, index) => {
+            const source = getNode(edge.from);
+            const target = getNode(edge.to);
+            if (!source || !target) return;
+            const route = buildEdgeRoute(source, target);
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('class', 'bpmn-edge-line');
+            if (index === selectedEdgeIndex) path.classList.add('selected');
+            path.setAttribute('d', route.path);
+            path.setAttribute('marker-end', 'url(#editor-arrow)');
+            path.dataset.edgeIndex = index;
+            svg.appendChild(path);
+
+            if (edge.label) {
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('class', 'bpmn-edge-text');
+                text.setAttribute('x', route.labelX);
+                text.setAttribute('y', route.labelY);
+                text.textContent = edge.label;
+                svg.appendChild(text);
+            }
+        });
+
+        model.nodes.forEach(node => {
+            const element = document.createElement('div');
+            const riskClass = getNodeRiskClass(node);
+            element.className = `bpmn-editor-node ${node.type || 'task'} ${riskClass}`;
+            if (node.id === selectedNodeId) element.classList.add('selected');
+            if (node.id === connectFrom) element.classList.add('connecting');
+            element.dataset.nodeId = node.id;
+            element.style.left = `${node.x}px`;
+            element.style.top = `${node.y}px`;
+            element.innerHTML = `<span>${escapeHtml(node.label || node.id)}</span>`;
+            stage.appendChild(element);
+        });
+
+        renderEdges();
+        renderNodeEditor();
+        renderEdgeEditor();
+        renderValidation();
+        syncJson();
+    }
+
+    function renderEdges() {
+        edgeList.innerHTML = '';
+        if (!model.edges.length) {
+            edgeList.innerHTML = '<div class="p-2 bpmn-muted">Связей пока нет</div>';
+            return;
+        }
+        model.edges.forEach((edge, index) => {
+            const row = document.createElement('div');
+            row.className = 'bpmn-edge-row';
+            if (index === selectedEdgeIndex) row.classList.add('selected');
+            row.innerHTML = `
+                <button type="button" class="text-left flex-1" data-select-edge="${index}">
+                    ${escapeHtml(edge.from)} -> ${escapeHtml(edge.to)} ${edge.label ? `(${escapeHtml(edge.label)})` : ''}
+                </button>
+                <button type="button" class="text-red-600" data-delete-edge="${index}">Удалить</button>
+            `;
+            edgeList.appendChild(row);
+        });
+    }
+
+    function renderNodeEditor() {
+        const node = getNode(selectedNodeId);
+        if (!node) {
+            nodeEditor.classList.add('hidden');
+            nodeBusinessDetails.innerHTML = '';
+            selectionHint.textContent = connectMode ? 'Выберите исходный узел для связи.' : 'Выберите узел или включите режим связи.';
+            return;
+        }
+        nodeEditor.classList.remove('hidden');
+        selectionHint.textContent = connectMode ? 'Теперь выберите целевой узел.' : 'Редактируйте выбранный узел.';
+        nodeId.value = node.id;
+        nodeType.value = node.type || 'task';
+        nodeLabel.value = node.label || '';
+        nodeSubprocess.value = node.subprocess_id ? String(node.subprocess_id) : '';
+        const risk = node.subprocess_id ? subprocessRisk[String(node.subprocess_id)] : null;
+        const context = node.subprocess_id ? businessContext[String(node.subprocess_id)] : null;
+        nodeRiskHint.textContent = risk
+            ? `Риск подпроцесса: ${risk.risk_category}, max residual ${risk.max_residual_risk}, рисков: ${risk.risk_count}`
+            : 'Узел пока не связан с подпроцессом и не участвует в risk-oriented BPMN.';
+        renderNodeBusinessDetails(context);
+    }
+
+    function renderNodeBusinessDetails(context) {
+        if (!context) {
+            nodeBusinessDetails.innerHTML = '';
+            return;
+        }
+        const subprocess = context.subprocess || {};
+        const risks = context.risks || [];
+        const topRisks = risks.slice(0, 3).map(risk => `
+            <li>
+                ${escapeHtml(risk.description || risk.threat_name || 'Риск')}<br>
+                было ${escapeHtml(risk.initial_risk)} -> стало ${escapeHtml(risk.residual_risk)}, снижение ${escapeHtml(risk.risk_reduction)}
+            </li>
+        `).join('');
+        nodeBusinessDetails.innerHTML = `
+            <div class="border rounded p-2 bg-gray-50">
+                <div><strong>Ответственный:</strong> ${escapeHtml(subprocess.responsible_person || '')}</div>
+                <div><strong>Системы:</strong> ${escapeHtml(subprocess.used_systems || '')}</div>
+                <div><strong>Активы:</strong> ${escapeHtml((context.assets || []).join(', '))}</div>
+                <div><strong>Угрозы:</strong> ${escapeHtml((context.threats || []).join(', '))}</div>
+                <div><strong>Контроли:</strong> ${escapeHtml((context.controls || []).join(', '))}</div>
+                ${topRisks ? `<ul class="list-disc pl-5 mt-2">${topRisks}</ul>` : '<div class="text-gray-500 mt-2">Риски для подпроцесса не заданы.</div>'}
+            </div>
+        `;
+    }
+
+    function getNodeRiskClass(node) {
+        if (!node.subprocess_id) return 'risk-none';
+        const risk = subprocessRisk[String(node.subprocess_id)];
+        return risk ? `risk-${risk.risk_class}` : 'risk-none';
+    }
+
+    function renderEdgeEditor() {
+        const edge = selectedEdgeIndex !== null ? model.edges[selectedEdgeIndex] : null;
+        if (!edge) {
+            edgeEditor.classList.add('hidden');
+            return;
+        }
+
+        edgeEditor.classList.remove('hidden');
+        edgeFrom.innerHTML = model.nodes.map(node => (
+            `<option value="${escapeHtml(node.id)}">${escapeHtml(node.label || node.id)} (${escapeHtml(node.id)})</option>`
+        )).join('');
+        edgeTo.innerHTML = edgeFrom.innerHTML;
+        edgeFrom.value = edge.from;
+        edgeTo.value = edge.to;
+        edgeLabel.value = edge.label || '';
+    }
+
+    function buildEdgeRoute(source, target) {
+        const sourceX = Number(source.x);
+        const sourceY = Number(source.y);
+        const sourceWidth = Number(source.width);
+        const sourceHeight = Number(source.height);
+        const targetX = Number(target.x);
+        const targetY = Number(target.y);
+        const targetWidth = Number(target.width);
+        const targetHeight = Number(target.height);
+        const sourceCx = sourceX + sourceWidth / 2;
+        const sourceCy = sourceY + sourceHeight / 2;
+        const targetCx = targetX + targetWidth / 2;
+        const targetCy = targetY + targetHeight / 2;
+        const dx = targetCx - sourceCx;
+        const dy = targetCy - sourceCy;
+        let startX;
+        let startY;
+        let endX;
+        let endY;
+        let c1x;
+        let c1y;
+        let c2x;
+        let c2y;
+
+        if (Math.abs(dx) >= Math.abs(dy)) {
+            if (dx >= 0) {
+                startX = sourceX + sourceWidth;
+                endX = targetX;
+            } else {
+                startX = sourceX;
+                endX = targetX + targetWidth;
+            }
+            startY = sourceCy;
+            endY = targetCy;
+            const offset = Math.max(70, Math.abs(endX - startX) / 2);
+            const direction = dx >= 0 ? 1 : -1;
+            c1x = startX + offset * direction;
+            c1y = startY;
+            c2x = endX - offset * direction;
+            c2y = endY;
+        } else {
+            if (dy >= 0) {
+                startY = sourceY + sourceHeight;
+                endY = targetY;
+            } else {
+                startY = sourceY;
+                endY = targetY + targetHeight;
+            }
+            startX = sourceCx;
+            endX = targetCx;
+            const offset = Math.max(70, Math.abs(endY - startY) / 2);
+            const direction = dy >= 0 ? 1 : -1;
+            c1x = startX;
+            c1y = startY + offset * direction;
+            c2x = endX;
+            c2y = endY - offset * direction;
+        }
+
+        return {
+            path: `M ${startX} ${startY} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${endX} ${endY}`,
+            labelX: (startX + endX) / 2,
+            labelY: (startY + endY) / 2 - 8
+        };
+    }
+
+    function addNode(type) {
+        const count = model.nodes.filter(node => node.type === type).length + 1;
+        const id = `${type}_${Date.now().toString().slice(-6)}`;
+        const size = nodeSize({type});
+        model.nodes.push({
+            id,
+            type,
+            label: type === 'gateway' ? 'Условие?' : type === 'start' ? 'Старт' : type === 'end' ? 'Конец' : `Задача ${count}`,
+            x: 120 + model.nodes.length * 35,
+            y: 120 + model.nodes.length * 28,
+            width: size.width,
+            height: size.height
+        });
+        selectedNodeId = id;
+        selectedEdgeIndex = null;
+        render();
+    }
+
+    function deleteSelected() {
+        if (selectedEdgeIndex !== null) {
+            model.edges.splice(selectedEdgeIndex, 1);
+            selectedEdgeIndex = null;
+            render();
+            return;
+        }
+        if (!selectedNodeId) return;
+        model.nodes = model.nodes.filter(node => node.id !== selectedNodeId);
+        model.edges = model.edges.filter(edge => edge.from !== selectedNodeId && edge.to !== selectedNodeId);
+        selectedNodeId = null;
+        connectFrom = null;
+        render();
+    }
+
+    function createEdge(targetId) {
+        if (!connectFrom || connectFrom === targetId) return;
+        const exists = model.edges.some(edge => edge.from === connectFrom && edge.to === targetId);
+        if (!exists) {
+            model.edges.push({from: connectFrom, to: targetId, label: ''});
+            selectedEdgeIndex = model.edges.length - 1;
+        }
+        connectFrom = targetId;
+        selectedNodeId = targetId;
+        render();
+    }
+
+    function autoLayout() {
+        model.nodes.forEach((node, index) => {
+            node.x = 80 + index * 190;
+            node.y = 220 + (index % 2 === 0 ? 0 : -90);
+        });
+        render();
+    }
+
+    function nodeIdFromName(name, fallback) {
+        const slug = String(name || fallback)
+            .toLowerCase()
+            .replace(/[^a-zа-яё0-9]+/gi, '_')
+            .replace(/^_+|_+$/g, '')
+            .slice(0, 28);
+        return slug || fallback;
+    }
+
+    function uniqueNodeId(base, usedIds) {
+        let id = base;
+        let counter = 2;
+        while (usedIds.has(id)) {
+            id = `${base}_${counter}`;
+            counter += 1;
+        }
+        usedIds.add(id);
+        return id;
+    }
+
+    function createFromSubprocesses() {
+        if (!subprocessTemplates.length) {
+            alert('У процесса нет подпроцессов. Сначала добавьте подпроцессы.');
+            return;
+        }
+        if (model.nodes.length && !confirm('Заменить текущую BPMN-модель схемой из подпроцессов?')) return;
+
+        const usedIds = new Set();
+        const nodes = [];
+        const edges = [];
+        const startId = uniqueNodeId('start', usedIds);
+        nodes.push({id: startId, type: 'start', label: 'Старт', x: 80, y: 250});
+
+        let previousId = startId;
+        subprocessTemplates.forEach((subprocess, index) => {
+            const id = uniqueNodeId(nodeIdFromName(subprocess.name, `task_${subprocess.id}`), usedIds);
+            const column = index % 4;
+            const row = Math.floor(index / 4);
+            nodes.push({
+                id,
+                type: 'task',
+                label: subprocess.name,
+                subprocess_id: subprocess.id,
+                x: 250 + column * 260,
+                y: 180 + row * 170
+            });
+            edges.push({from: previousId, to: id});
+            previousId = id;
+        });
+
+        const endId = uniqueNodeId('end', usedIds);
+        const lastIndex = subprocessTemplates.length - 1;
+        nodes.push({
+            id: endId,
+            type: 'end',
+            label: 'Завершение',
+            x: 250 + ((lastIndex + 1) % 4) * 260,
+            y: 180 + Math.floor((lastIndex + 1) / 4) * 170
+        });
+        edges.push({from: previousId, to: endId});
+
+        model = {nodes, edges};
+        selectedNodeId = null;
+        selectedEdgeIndex = null;
+        connectFrom = null;
+        render();
+    }
+
+    function autoBindSubprocesses() {
+        let changed = 0;
+        model.nodes.forEach(node => {
+            if (node.type === 'start' || node.type === 'end' || node.subprocess_id) return;
+            const inferred = inferSubprocessId(node);
+            if (inferred) {
+                node.subprocess_id = inferred;
+                changed += 1;
+            }
+        });
+        render();
+        alert(changed ? `Привязано узлов: ${changed}` : 'Новых совпадений не найдено.');
+    }
+
+    function validateModel() {
+        normalizeModel();
+        const messages = [];
+        const ids = new Set(model.nodes.map(node => node.id));
+        const taskNodes = model.nodes.filter(node => !['start', 'end', 'gateway'].includes(node.type));
+        const linkedSubprocesses = new Set(taskNodes.filter(node => node.subprocess_id).map(node => String(node.subprocess_id)));
+        const missingSubprocesses = subprocessTemplates.filter(subprocess => !linkedSubprocesses.has(String(subprocess.id)));
+        const duplicateIds = model.nodes
+            .map(node => node.id)
+            .filter((id, index, array) => array.indexOf(id) !== index);
+        const brokenEdges = model.edges.filter(edge => !ids.has(edge.from) || !ids.has(edge.to) || edge.from === edge.to);
+        const starts = model.nodes.filter(node => node.type === 'start');
+        const ends = model.nodes.filter(node => node.type === 'end');
+        const unlinkedTasks = taskNodes.filter(node => !node.subprocess_id);
+        const isolatedNodes = model.nodes.filter(node => {
+            if (node.type === 'start' && model.edges.some(edge => edge.from === node.id)) return false;
+            if (node.type === 'end' && model.edges.some(edge => edge.to === node.id)) return false;
+            return !model.edges.some(edge => edge.from === node.id || edge.to === node.id);
+        });
+
+        if (!model.nodes.length) {
+            messages.push({level: 'error', text: 'Модель пустая.'});
+        }
+        if (duplicateIds.length) {
+            messages.push({level: 'error', text: `Повторяются ID узлов: ${[...new Set(duplicateIds)].join(', ')}.`});
+        }
+        if (brokenEdges.length) {
+            messages.push({level: 'error', text: `Есть некорректные связи: ${brokenEdges.length}.`});
+        }
+        if (starts.length !== 1) {
+            messages.push({level: 'warning', text: `Стартовых событий должно быть 1, сейчас: ${starts.length}.`});
+        }
+        if (ends.length < 1) {
+            messages.push({level: 'warning', text: 'Нет финального события.'});
+        }
+        if (unlinkedTasks.length) {
+            messages.push({level: 'warning', text: `Задачи без подпроцесса: ${unlinkedTasks.map(node => node.label || node.id).join(', ')}.`});
+        }
+        if (missingSubprocesses.length) {
+            messages.push({level: 'warning', text: `Не показаны подпроцессы: ${missingSubprocesses.map(item => item.name).join(', ')}.`});
+        }
+        if (isolatedNodes.length) {
+            messages.push({level: 'warning', text: `Изолированные узлы: ${isolatedNodes.map(node => node.label || node.id).join(', ')}.`});
+        }
+        if (!messages.length) {
+            messages.push({level: 'ok', text: 'Модель покрывает подпроцессы, связи корректны, явных проблем нет.'});
+        }
+        return messages;
+    }
+
+    function renderValidation() {
+        const validationList = document.getElementById('validationList');
+        const messages = validateModel();
+        validationList.innerHTML = messages.map(message => (
+            `<div class="bpmn-check-item ${message.level}">${escapeHtml(message.text)}</div>`
+        )).join('');
+    }
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[char]));
+    }
+
+    document.querySelectorAll('[data-add-node]').forEach(button => {
+        button.addEventListener('click', () => addNode(button.dataset.addNode));
+    });
+
+    connectModeBtn.addEventListener('click', () => {
+        connectMode = !connectMode;
+        connectFrom = null;
+        selectedEdgeIndex = null;
+        connectModeBtn.classList.toggle('active', connectMode);
+        render();
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', deleteSelected);
+    document.getElementById('autoLayoutBtn').addEventListener('click', autoLayout);
+    document.getElementById('createFromSubprocessesBtn').addEventListener('click', createFromSubprocesses);
+    document.getElementById('autoBindBtn').addEventListener('click', autoBindSubprocesses);
+    document.getElementById('validateBtn').addEventListener('click', () => {
+        renderValidation();
+        document.getElementById('validationList').scrollIntoView({block: 'nearest'});
+    });
+
+    stage.addEventListener('mousedown', event => {
+        const element = event.target.closest('.bpmn-editor-node');
+        if (!element) return;
+        const node = getNode(element.dataset.nodeId);
+        if (!node) return;
+
+        if (connectMode) {
+            if (!connectFrom) {
+                connectFrom = node.id;
+                selectedNodeId = node.id;
+                render();
+            } else {
+                createEdge(node.id);
+            }
+            return;
+        }
+
+        selectedNodeId = node.id;
+        selectedEdgeIndex = null;
+        dragState = {
+            node,
+            startX: event.clientX,
+            startY: event.clientY,
+            originalX: Number(node.x),
+            originalY: Number(node.y)
+        };
+        render();
+    });
+
+    window.addEventListener('mousemove', event => {
+        if (!dragState) return;
+        dragState.node.x = Math.max(8, dragState.originalX + event.clientX - dragState.startX);
+        dragState.node.y = Math.max(8, dragState.originalY + event.clientY - dragState.startY);
+        render();
+    });
+
+    window.addEventListener('mouseup', () => {
+        dragState = null;
+    });
+
+    edgeList.addEventListener('click', event => {
+        const button = event.target.closest('[data-delete-edge]');
+        const selectButton = event.target.closest('[data-select-edge]');
+        if (button) {
+            model.edges.splice(Number(button.dataset.deleteEdge), 1);
+            selectedEdgeIndex = null;
+            render();
+            return;
+        }
+        if (!selectButton) return;
+        selectedEdgeIndex = Number(selectButton.dataset.selectEdge);
+        selectedNodeId = null;
+        render();
+    });
+
+    svg.addEventListener('click', event => {
+        const path = event.target.closest('[data-edge-index]');
+        if (!path) return;
+        selectedEdgeIndex = Number(path.dataset.edgeIndex);
+        selectedNodeId = null;
+        connectMode = false;
+        connectFrom = null;
+        connectModeBtn.classList.remove('active');
+        render();
+    });
+
+    edgeFrom.addEventListener('change', () => {
+        const edge = selectedEdgeIndex !== null ? model.edges[selectedEdgeIndex] : null;
+        if (!edge || edgeFrom.value === edgeTo.value) return;
+        edge.from = edgeFrom.value;
+        render();
+    });
+
+    edgeTo.addEventListener('change', () => {
+        const edge = selectedEdgeIndex !== null ? model.edges[selectedEdgeIndex] : null;
+        if (!edge || edgeFrom.value === edgeTo.value) return;
+        edge.to = edgeTo.value;
+        render();
+    });
+
+    edgeLabel.addEventListener('input', () => {
+        const edge = selectedEdgeIndex !== null ? model.edges[selectedEdgeIndex] : null;
+        if (!edge) return;
+        edge.label = edgeLabel.value;
+        render();
+    });
+
+    document.getElementById('clearEdgeSelectionBtn').addEventListener('click', () => {
+        selectedEdgeIndex = null;
+        render();
+    });
+
+    document.getElementById('deleteEdgeBtn').addEventListener('click', () => {
+        if (selectedEdgeIndex === null) return;
+        model.edges.splice(selectedEdgeIndex, 1);
+        selectedEdgeIndex = null;
+        render();
+    });
+
+    nodeType.addEventListener('change', () => {
+        const node = getNode(selectedNodeId);
+        if (!node) return;
+        node.type = nodeType.value;
+        const size = nodeSize(node);
+        node.width = size.width;
+        node.height = size.height;
+        render();
+    });
+
+        nodeLabel.addEventListener('input', () => {
+        const node = getNode(selectedNodeId);
+        if (!node) return;
+        node.label = nodeLabel.value;
+        render();
+    });
+
+    nodeSubprocess.addEventListener('change', () => {
+        const node = getNode(selectedNodeId);
+        if (!node) return;
+        if (nodeSubprocess.value) {
+            node.subprocess_id = Number(nodeSubprocess.value);
+        } else {
+            node.subprocess_id = null;
+        }
+        render();
+    });
+
+    document.getElementById('applyRawJsonBtn').addEventListener('click', () => {
+        model = safeParse(rawJsonEditor.value);
+        selectedNodeId = null;
+        selectedEdgeIndex = null;
+        connectFrom = null;
+        render();
+    });
+
+    form.addEventListener('submit', syncJson);
+    render();
+})();
+</script>
+{% endblock %}

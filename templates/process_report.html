@@ -1,0 +1,272 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .report-page { max-width: 1180px; }
+    .report-hero,
+    .report-section,
+    .report-details {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 14px;
+    }
+    .report-hero {
+        border-left: 4px solid #2563eb;
+        padding: 16px;
+    }
+    .report-title {
+        color: #0f172a;
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+    .report-subtitle,
+    .report-text {
+        color: #475569;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+    .report-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .report-btn {
+        background: #2563eb;
+        border-radius: 4px;
+        color: #ffffff;
+        display: inline-block;
+        font-weight: 700;
+        padding: 8px 12px;
+        text-decoration: none;
+    }
+    .report-btn.secondary { background: #475569; }
+    .report-btn.green { background: #059669; }
+    .report-section-header {
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+        font-weight: 800;
+        padding: 12px 14px;
+    }
+    .report-section-body { padding: 14px; }
+    .report-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+    .report-kpi {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 10px;
+    }
+    .report-kpi-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .report-kpi-value {
+        color: #0f172a;
+        font-size: 22px;
+        font-weight: 800;
+        margin-top: 4px;
+    }
+    .report-scroll { max-width: 100%; overflow-x: auto; }
+    .report-table {
+        border-collapse: collapse;
+        font-size: 14px;
+        min-width: 760px;
+        width: 100%;
+    }
+    .report-table th,
+    .report-table td {
+        border: 1px solid #e2e8f0;
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+    }
+    .report-table th {
+        background: #f8fafc;
+        color: #334155;
+        white-space: nowrap;
+    }
+    .priority-low { background: #dcfce7; color: #166534; }
+    .priority-medium { background: #fef3c7; color: #92400e; }
+    .priority-high { background: #fee2e2; color: #991b1b; }
+    .priority-badge {
+        border-radius: 999px;
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 800;
+        padding: 3px 8px;
+    }
+    .report-details summary {
+        cursor: pointer;
+        font-weight: 800;
+        padding: 12px 14px;
+    }
+    .report-details-body {
+        border-top: 1px solid #e2e8f0;
+        padding: 14px;
+    }
+</style>
+
+<div class="report-page">
+    <section class="report-hero">
+        <div class="report-title">Отчет по процессу CSIRT: {{ process[2] }}</div>
+        <div class="report-subtitle">{{ process[10] }}{% if process[11] %} · {{ process[11] }}{% endif %}</div>
+        <div class="report-text">
+            Отчет показывает процесс реагирования как часть диссертационной методики: карта шагов, проверка BPMN,
+            выявленные пробелы, рекомендации и итог для совершенствования процесса.
+        </div>
+        <div class="report-actions">
+            <a href="{{ url_for('methodology') }}" class="report-btn secondary">Методика</a>
+            <a href="{{ url_for('process_detail', id=process[0]) }}" class="report-btn">Карточка процесса</a>
+            <a href="{{ url_for('list_risk_treatments') }}" class="report-btn green">План рекомендаций</a>
+        </div>
+    </section>
+
+    <section class="report-section">
+        <div class="report-section-header">1. Краткий вывод</div>
+        <div class="report-section-body">
+            <div class="report-grid">
+                <div class="report-kpi"><div class="report-kpi-label">Шаги процесса</div><div class="report-kpi-value">{{ subprocesses | length }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Пробелы</div><div class="report-kpi-value">{{ summary.risk_count }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Критичные</div><div class="report-kpi-value">{{ summary.high_count }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Рекомендации</div><div class="report-kpi-value">{{ treatments | length }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">BPMN-проверка</div><div class="report-kpi-value">{{ bpmn_quality.passed_checks }}/{{ bpmn_quality.total_checks }}</div></div>
+            </div>
+            <p class="font-semibold mt-4">{{ summary.conclusion }}</p>
+        </div>
+    </section>
+
+    <section class="report-section">
+        <div class="report-section-header">2. Паспорт процесса</div>
+        <div class="report-section-body">
+            <div class="report-grid">
+                <div class="report-kpi"><div class="report-kpi-label">Тип</div><div class="report-text">{{ process[4] or '-' }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Владелец</div><div class="report-text">{{ process[5] or '-' }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Входы</div><div class="report-text">{{ process[6] or '-' }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Выходы</div><div class="report-text">{{ process[7] or '-' }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Регуляторы</div><div class="report-text">{{ process[8] or '-' }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Ресурсы</div><div class="report-text">{{ process[9] or '-' }}</div></div>
+            </div>
+            {% if process[3] %}<div class="report-text">{{ process[3] }}</div>{% endif %}
+        </div>
+    </section>
+
+    <section class="report-section">
+        <div class="report-section-header">3. Шаги реагирования</div>
+        <div class="report-section-body">
+            <div class="report-scroll">
+                <table class="report-table">
+                    <thead><tr><th>#</th><th>Шаг</th><th>Вход</th><th>Выход</th><th>Ответственная роль</th><th>Системы</th></tr></thead>
+                    <tbody>
+                        {% for sp in subprocesses %}
+                            <tr>
+                                <td>{{ sp[7] or loop.index }}</td>
+                                <td>{{ sp[1] }}</td>
+                                <td>{{ sp[3] or '-' }}</td>
+                                <td>{{ sp[4] or '-' }}</td>
+                                <td>{{ sp[5] or '-' }}</td>
+                                <td>{{ sp[6] or '-' }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="6" class="text-gray-500">Шаги процесса пока не описаны.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="report-section">
+        <div class="report-section-header">4. Проверка BPMN</div>
+        <div class="report-section-body">
+            <div class="report-grid">
+                <div class="report-kpi"><div class="report-kpi-label">Результат</div><div class="report-kpi-value">{{ bpmn_quality.score }}%</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Проверки</div><div class="report-kpi-value">{{ bpmn_quality.passed_checks }}/{{ bpmn_quality.total_checks }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Узлы / связи</div><div class="report-kpi-value">{{ bpmn_quality.node_count }} / {{ bpmn_quality.edge_count }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Связанные шаги</div><div class="report-kpi-value">{{ bpmn_quality.linked_task_count }}/{{ bpmn_quality.task_count }}</div></div>
+                <div class="report-kpi"><div class="report-kpi-label">Покрытие шагов</div><div class="report-kpi-value">{{ bpmn_quality.subprocess_coverage }}%</div></div>
+            </div>
+            {% if bpmn_quality.issues %}
+                <div class="report-text">
+                    {% for issue in bpmn_quality.issues %}
+                        <div><strong>{{ issue.title }}:</strong> {{ issue.detail }}</div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="report-text">BPMN связан с шагами процесса и пригоден для демонстрации методики.</div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="report-section">
+        <div class="report-section-header">5. Пробелы процесса</div>
+        <div class="report-section-body">
+            <div class="report-scroll">
+                <table class="report-table">
+                    <thead><tr><th>Шаг</th><th>Пробел</th><th>Оценка</th><th>Приоритет</th><th>Рекомендация системы</th></tr></thead>
+                    <tbody>
+                        {% for risk in risks %}
+                            <tr>
+                                <td>{{ risk.subprocess_name or '-' }}</td>
+                                <td>{{ risk.risk_description or risk.threat_name or '-' }}</td>
+                                <td>{{ risk.residual_risk | round(2) }}</td>
+                                <td>
+                                    <span class="priority-badge {{ 'priority-low' if risk.risk_level == 'Низкий' else 'priority-medium' if risk.risk_level == 'Средний' else 'priority-high' }}">
+                                        {{ risk.risk_level }}
+                                    </span>
+                                </td>
+                                <td>{{ risk.ai_recommendation or '-' }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="text-gray-500">Пробелы процесса пока не добавлены.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="report-section">
+        <div class="report-section-header">6. Рекомендации по улучшению</div>
+        <div class="report-section-body">
+            <div class="report-scroll">
+                <table class="report-table">
+                    <thead><tr><th>Шаг</th><th>Пробел</th><th>Рекомендация</th><th>Ответственный</th><th>Срок</th><th>Статус</th><th>Прогресс</th></tr></thead>
+                    <tbody>
+                        {% for item in treatments %}
+                            <tr>
+                                <td>{{ item[8] or '-' }}</td>
+                                <td>{{ item[7] or '-' }}</td>
+                                <td><strong>{{ item[1] }}</strong>{% if item[2] %}<br>{{ item[2] }}{% endif %}</td>
+                                <td>{{ item[4] or '-' }}</td>
+                                <td>{{ item[5] or '-' }}</td>
+                                <td>{{ item[3] }}</td>
+                                <td>{{ item[6] or 0 }}%</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="7" class="text-gray-500">Рекомендации по улучшению пока не добавлены.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <details class="report-details">
+        <summary>Приложение: BPMN-схема</summary>
+        <div class="report-details-body">
+            {% if bpmn_model and bpmn_model.nodes %}
+                {% include "_bpmn_viewer.html" %}
+            {% else %}
+                <p class="text-gray-600">BPMN-схема пока не задана.</p>
+            {% endif %}
+        </div>
+    </details>
+</div>
+{% endblock %}

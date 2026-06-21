@@ -1,0 +1,198 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .rec-page { max-width: 920px; }
+    .rec-header,
+    .rec-card,
+    .rec-details {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 14px;
+    }
+    .rec-header {
+        border-left: 4px solid #2563eb;
+        padding: 16px;
+    }
+    .rec-title {
+        color: #0f172a;
+        font-size: 22px;
+        font-weight: 800;
+    }
+    .rec-note {
+        color: #475569;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+    .rec-card-header {
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+        font-weight: 800;
+        padding: 12px 14px;
+    }
+    .rec-card-body {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        padding: 14px;
+    }
+    .rec-field label {
+        color: #334155;
+        display: block;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+    .rec-field input,
+    .rec-field select,
+    .rec-field textarea {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 8px;
+        width: 100%;
+    }
+    .rec-field textarea { min-height: 92px; }
+    .rec-wide { grid-column: 1 / -1; }
+    .rec-help {
+        color: #64748b;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    .rec-details summary {
+        cursor: pointer;
+        font-weight: 800;
+        padding: 12px 14px;
+    }
+    .rec-details-body {
+        border-top: 1px solid #e2e8f0;
+        padding: 14px;
+    }
+    .rec-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+    .rec-btn {
+        border-radius: 4px;
+        color: #ffffff;
+        display: inline-block;
+        font-weight: 700;
+        padding: 8px 12px;
+        text-decoration: none;
+    }
+    .rec-btn.primary { background: #2563eb; }
+    .rec-btn.secondary { background: #475569; }
+</style>
+
+<div class="rec-page">
+    <section class="rec-header">
+        <div class="rec-title">{{ 'Редактировать рекомендацию' if treatment else 'Добавить рекомендацию' }}</div>
+        <div class="rec-note">
+            Рекомендация показывает, как закрыть пробел процесса реагирования: что сделать, кто отвечает,
+            когда выполнить и как подтвердить результат.
+        </div>
+    </section>
+
+    <form method="POST">
+        <section class="rec-card">
+            <div class="rec-card-header">1. Что нужно улучшить</div>
+            <div class="rec-card-body">
+                <div class="rec-field rec-wide">
+                    <label>Пробел процесса реагирования</label>
+                    <select name="process_risk_id" required>
+                        {% for risk in process_risks %}
+                            <option value="{{ risk[0] }}" {% if (treatment and treatment[1] == risk[0]) or (selected_risk_id and selected_risk_id == risk[0]) %}selected{% endif %}>
+                                {{ risk[1] }}{% if risk[2] %} / {{ risk[2] }}{% endif %} - {{ risk[3] or 'Пробел процесса' }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="rec-field rec-wide">
+                    <label>Название рекомендации</label>
+                    <input name="title" value="{{ treatment[2] if treatment else '' }}" required placeholder="Например: утвердить регламент triage и SLA эскалации">
+                </div>
+                <div class="rec-field rec-wide">
+                    <label>Что нужно сделать</label>
+                    <textarea name="description" placeholder="Кратко опишите действие, которое улучшает процесс">{{ treatment[3] if treatment else '' }}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section class="rec-card">
+            <div class="rec-card-header">2. Исполнение</div>
+            <div class="rec-card-body">
+                <div class="rec-field">
+                    <label>Ответственный</label>
+                    <input name="owner" value="{{ treatment[5] if treatment else '' }}" placeholder="Например: CSIRT Lead">
+                </div>
+                <div class="rec-field">
+                    <label>Срок</label>
+                    <input type="date" name="due_date" value="{{ treatment[6] if treatment else '' }}">
+                </div>
+                <div class="rec-field">
+                    <label>Статус</label>
+                    {% set status = treatment[11] if treatment else 'Planned' %}
+                    <select name="status">
+                        {% for item in ['Planned', 'In progress', 'Waiting validation', 'Completed', 'Accepted', 'Cancelled'] %}
+                            <option value="{{ item }}" {% if status == item %}selected{% endif %}>{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="rec-field">
+                    <label>Прогресс, %</label>
+                    <input type="number" min="0" max="100" name="progress" value="{{ treatment[10] if treatment else '0' }}">
+                </div>
+            </div>
+        </section>
+
+        <details class="rec-details">
+            <summary>Дополнительные параметры</summary>
+            <div class="rec-details-body">
+                <div class="rec-card-body">
+                    <div class="rec-field">
+                        <label>Тип решения</label>
+                        {% set treatment_type = treatment[4] if treatment else 'Mitigate' %}
+                        <select name="treatment_type">
+                            {% for item in ['Mitigate', 'Accept', 'Transfer', 'Avoid'] %}
+                                <option value="{{ item }}" {% if treatment_type == item %}selected{% endif %}>{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="rec-help">Обычно для улучшения процесса используется Mitigate.</div>
+                    </div>
+                    <div class="rec-field">
+                        <label>Ответственный пользователь</label>
+                        <select name="owner_user_id">
+                            <option value="">Не назначен</option>
+                            {% for user in users %}
+                                <option value="{{ user[0] }}" {% if treatment and treatment[13] == user[0] %}selected{% endif %}>{{ user[1] }} - {{ user[2] | role_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="rec-field">
+                        <label>Стоимость</label>
+                        <input type="number" step="0.1" min="0" name="cost" value="{{ treatment[7] if treatment else '0' }}">
+                    </div>
+                    <div class="rec-field">
+                        <label>Ожидаемая остаточная оценка</label>
+                        <input type="number" step="0.01" min="0" name="expected_residual_risk" value="{{ treatment[8] if treatment else '' }}">
+                    </div>
+                    <div class="rec-field">
+                        <label>Фактическая остаточная оценка</label>
+                        <input type="number" step="0.01" min="0" name="actual_residual_risk" value="{{ treatment[9] if treatment else '' }}">
+                    </div>
+                    <div class="rec-field rec-wide">
+                        <label>Доказательства выполнения</label>
+                        <textarea name="evidence" placeholder="Ссылка на регламент, протокол тестирования, отчет, скриншот из Service Desk">{{ treatment[12] if treatment else '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <div class="rec-actions">
+            <button class="rec-btn primary" type="submit">Сохранить рекомендацию</button>
+            <a href="{{ url_for('list_risk_treatments') }}" class="rec-btn secondary">К плану рекомендаций</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

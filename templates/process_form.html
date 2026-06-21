@@ -1,0 +1,25 @@
+{% extends "index.html" %}
+{% block content %}
+<h2 class="text-xl font-semibold mb-4">{{ 'Редактировать процесс' if process else 'Добавить процесс' }}</h2>
+<form method="POST" class="space-y-4">
+    <div><label class="block">Компания</label><select name="company_id" class="border p-2 w-full" required>{% for company in companies %}<option value="{{ company[0] }}" {% if process and company[0] == process[1] %}selected{% endif %}>{{ company[1] }}</option>{% endfor %}</select></div>
+    <div><label class="block">Название</label><input name="name" class="border p-2 w-full" value="{{ process[2] if process else '' }}" required></div>
+    <div><label class="block">Описание</label><textarea name="description" class="border p-2 w-full">{{ process[3] if process else '' }}</textarea></div>
+    <div><label class="block">Тип процесса</label><input name="process_type" class="border p-2 w-full" value="{{ process[4] if process else '' }}"></div>
+    <div>
+        <label class="block">Владелец процесса (пользователь)</label>
+        <select name="owner_user_id" class="border p-2 w-full">
+            <option value="">Не назначен</option>
+            {% for user in users %}
+                <option value="{{ user[0] }}" {% if process and process[10] == user[0] %}selected{% endif %}>{{ user[1] }} - {{ user[2] | role_label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div><label class="block">Владелец текстом</label><input name="owner" class="border p-2 w-full" value="{{ process[5] if process else '' }}"></div>
+    <div><label class="block">Входы</label><textarea name="input_data" class="border p-2 w-full">{{ process[6] if process else '' }}</textarea></div>
+    <div><label class="block">Выходы</label><textarea name="output_data" class="border p-2 w-full">{{ process[7] if process else '' }}</textarea></div>
+    <div><label class="block">Регуляторы/правила</label><textarea name="regulations" class="border p-2 w-full">{{ process[8] if process else '' }}</textarea></div>
+    <div><label class="block">Ресурсы</label><textarea name="resources" class="border p-2 w-full">{{ process[9] if process else '' }}</textarea></div>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded" type="submit">Сохранить</button>
+</form>
+{% endblock %}

@@ -1,0 +1,590 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .guide-page { max-width: 960px; }
+
+    /* Hero */
+    .guide-hero {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #2563eb;
+        border-radius: 8px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+    .guide-hero h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 6px; }
+    .guide-hero p  { color: #475569; font-size: 14px; margin: 0; line-height: 1.6; }
+
+    /* TOC */
+    .guide-toc {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 14px 20px;
+        margin-bottom: 20px;
+        columns: 2;
+        column-gap: 24px;
+    }
+    .guide-toc-title { font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing:.05em; color:#64748b; margin-bottom:8px; column-span:all; }
+    .guide-toc ol   { padding-left: 16px; margin: 0; }
+    .guide-toc li   { margin-bottom: 3px; break-inside: avoid; }
+    .guide-toc a    { color: #2563eb; font-size: 13px; text-decoration: none; }
+    .guide-toc a:hover { text-decoration: underline; }
+
+    /* Section */
+    .guide-section {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .guide-section-hdr {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .guide-section-hdr h2 { font-size: 17px; font-weight: 800; color: #0f172a; margin: 0; }
+    .guide-section-hdr .ico { font-size: 18px; }
+    .guide-body { padding: 18px 20px; }
+    .guide-body p  { color: #334155; font-size: 14px; line-height: 1.65; margin: 0 0 10px; }
+    .guide-body h3 { font-size: 14px; font-weight: 800; color: #0f172a; margin: 18px 0 8px; }
+    .guide-body h3:first-child { margin-top: 0; }
+    .guide-body ul, .guide-body ol { padding-left: 20px; margin: 0 0 10px; }
+    .guide-body li { font-size: 14px; color: #334155; margin-bottom: 4px; line-height: 1.55; }
+
+    /* Where breadcrumb */
+    .where {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 20px;
+        color: #1d4ed8;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 3px 10px;
+        margin-bottom: 12px;
+    }
+
+    /* Numbered steps */
+    .steps { margin: 0 0 12px; }
+    .step {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 10px;
+        align-items: flex-start;
+    }
+    .step-n {
+        background: #2563eb;
+        border-radius: 50%;
+        color: #fff;
+        flex-shrink: 0;
+        font-size: 12px;
+        font-weight: 800;
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
+        width: 24px;
+        margin-top: 1px;
+    }
+    .step-body { flex: 1; font-size: 14px; color: #334155; line-height: 1.55; }
+    .step-body strong { color: #0f172a; }
+    .step-body .eg { color: #64748b; font-style: italic; }
+
+    /* Field table */
+    .ftable { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0 14px; }
+    .ftable th, .ftable td { border: 1px solid #e2e8f0; padding: 7px 10px; text-align: left; vertical-align: top; }
+    .ftable th { background: #f8fafc; font-weight: 700; color: #334155; white-space: nowrap; }
+    .ftable td { color: #475569; }
+    .ftable .req { color: #dc2626; font-weight: 700; }
+    .ftable .eg  { color: #64748b; font-style: italic; }
+
+    /* Guide table */
+    .gtable { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 12px; }
+    .gtable th, .gtable td { border: 1px solid #e2e8f0; padding: 8px 11px; text-align: left; vertical-align: top; }
+    .gtable th { background: #f8fafc; font-weight: 700; color: #334155; }
+    .gtable td { color: #475569; }
+    .gtable tr:hover td { background: #f8fafc; }
+
+    /* Callouts */
+    .tip  { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 10px 14px; margin: 10px 0; font-size: 13px; color: #1e40af; }
+    .warn { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 10px 14px; margin: 10px 0; font-size: 13px; color: #92400e; }
+    .tip strong, .warn strong { font-weight: 800; }
+
+    /* Status pills */
+    .sflow { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    .sp { border-radius: 4px; font-size: 12px; font-weight: 700; padding: 3px 10px; white-space: nowrap; }
+    .sp-draft  { background: #f1f5f9; color: #475569; }
+    .sp-review { background: #eff6ff; color: #1d4ed8; }
+    .sp-approv { background: #ecfdf5; color: #065f46; }
+    .sp-inprog { background: #fef3c7; color: #92400e; }
+    .sp-closed { background: #f0fdf4; color: #166534; }
+    .sp-return { background: #fff7ed; color: #c2410c; }
+    .sarr { color: #94a3b8; font-weight: 700; }
+
+    /* Role cards */
+    .role-card { border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; overflow: hidden; }
+    .role-card-hdr { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 7px 14px; display: flex; align-items: center; gap: 8px; }
+    .role-tag { background: #2563eb; color: #fff; border-radius: 4px; font-size: 11px; font-weight: 700; padding: 2px 7px; }
+    .role-card-body { padding: 8px 14px; font-size: 13px; color: #475569; }
+    .role-card-body ul { padding-left: 16px; margin: 4px 0 0; }
+    .role-card-body li { margin-bottom: 3px; }
+
+    /* Scenario block */
+    .scenario {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin: 12px 0;
+        font-size: 13px;
+        color: #14532d;
+    }
+    .scenario strong { color: #15803d; }
+
+    @media(max-width:640px) { .guide-toc { columns: 1; } }
+</style>
+
+<div class="guide-page">
+
+<div class="guide-hero">
+    <h1>📗 Руководство пользователя — RiskFlow AI</h1>
+    <p>Пошаговые инструкции по работе с системой: от первого входа до закрытия риска. Читайте нужный раздел — каждый шаг описан с конкретными действиями и примерами.</p>
+</div>
+
+<div class="guide-toc">
+    <div class="guide-toc-title">Содержание</div>
+    <ol>
+        <li><a href="#s-roles">Роли и что они могут делать</a></li>
+        <li><a href="#s-start">Первый вход: три обязательных шага</a></li>
+        <li><a href="#s-nav">Как устроена навигация</a></li>
+        <li><a href="#s-company">Шаг 1 — Добавить организацию</a></li>
+        <li><a href="#s-process">Шаг 2 — Добавить процесс</a></li>
+        <li><a href="#s-risk">Шаг 3 — Зарегистрировать риск</a></li>
+        <li><a href="#s-workflow">Жизненный цикл риска</a></li>
+        <li><a href="#s-treatment">Добавить план обработки</a></li>
+        <li><a href="#s-mytasks">Мои задачи</a></li>
+        <li><a href="#s-analytics">Аналитика и отчёты</a></li>
+        <li><a href="#s-compliance">Нормативная база</a></li>
+        <li><a href="#s-admin">Администрирование</a></li>
+        <li><a href="#s-faq">Частые вопросы</a></li>
+    </ol>
+</div>
+
+<!-- РОЛИ -->
+<div class="guide-section" id="s-roles">
+    <div class="guide-section-hdr"><span class="ico">👥</span><h2>1. Роли и что они могут делать</h2></div>
+    <div class="guide-body">
+        <p>Каждый пользователь входит под одной из пяти ролей. Роль определяет, какие кнопки вы видите и какие действия вам доступны.</p>
+
+        <div class="role-card">
+            <div class="role-card-hdr"><span class="role-tag">admin</span><strong>Администратор</strong></div>
+            <div class="role-card-body">Полный доступ. Управляет пользователями, видит журнал аудита, может выполнять любые workflow-действия.
+                <ul><li>Создаёт и удаляет пользователей</li><li>Утверждает, возвращает и закрывает риски</li><li>Видит раздел «Администрирование» в меню</li></ul>
+            </div>
+        </div>
+        <div class="role-card">
+            <div class="role-card-hdr"><span class="role-tag">risk_manager</span><strong>Менеджер рисков</strong></div>
+            <div class="role-card-body">Управляет реестром рисков и согласованием.
+                <ul><li>Утверждает риски (In Review → Approved)</li><li>Запускает обработку и закрывает риски</li><li>Возвращает риски на доработку</li></ul>
+            </div>
+        </div>
+        <div class="role-card">
+            <div class="role-card-hdr"><span class="role-tag">process_owner</span><strong>Владелец процесса</strong></div>
+            <div class="role-card-body">Отвечает за свои процессы и их риски.
+                <ul><li>Добавляет и редактирует риски</li><li>Отправляет риски на согласование</li><li>Обновляет планы обработки</li></ul>
+            </div>
+        </div>
+        <div class="role-card">
+            <div class="role-card-hdr"><span class="role-tag">expert</span><strong>Эксперт</strong></div>
+            <div class="role-card-body">Проводит экспертную оценку рисков.
+                <ul><li>Заполняет оценки (вероятность, влияние, уязвимость)</li><li>Отправляет риски на согласование</li></ul>
+            </div>
+        </div>
+        <div class="role-card">
+            <div class="role-card-hdr"><span class="role-tag">auditor</span><strong>Аудитор</strong></div>
+            <div class="role-card-body">Только просмотр — не может изменять никакие данные.
+                <ul><li>Видит все риски, процессы, аналитику</li><li>Кнопок «Добавить» и «Редактировать» нет</li></ul>
+            </div>
+        </div>
+
+        <div class="tip"><strong>Как узнать свою роль?</strong> Она отображается под вашим именем в нижней части бокового меню.</div>
+    </div>
+</div>
+
+<!-- ПЕРВЫЙ ВХОД -->
+<div class="guide-section" id="s-start">
+    <div class="guide-section-hdr"><span class="ico">🚀</span><h2>2. Первый вход: три обязательных шага</h2></div>
+    <div class="guide-body">
+        <p>Когда система пустая, дашборд покажет онбординг-визард с тремя шагами. Выполните их по порядку — без организации нельзя создать процесс, без процесса — риск.</p>
+
+        <div class="sflow">
+            <span class="sp sp-draft">① Создать организацию</span>
+            <span class="sarr">→</span>
+            <span class="sp sp-review">② Добавить процесс</span>
+            <span class="sarr">→</span>
+            <span class="sp sp-approv">③ Зарегистрировать риск</span>
+        </div>
+
+        <p>Каждый шаг на дашборде показывает кнопку «Начать», которая ведёт прямо на нужную страницу. Выполненные шаги отмечаются зелёной галочкой ✓.</p>
+
+        <div class="tip"><strong>Подсказка:</strong> Визард исчезнет автоматически, как только вы создадите хотя бы одну организацию, один процесс и один риск.</div>
+    </div>
+</div>
+
+<!-- НАВИГАЦИЯ -->
+<div class="guide-section" id="s-nav">
+    <div class="guide-section-hdr"><span class="ico">🧭</span><h2>3. Как устроена навигация</h2></div>
+    <div class="guide-body">
+        <p>Слева — боковое меню с четырьмя секциями. Активная страница подсвечивается синим. Меню можно свернуть кнопкой <strong>☰</strong> в правом углу шапки — тогда останутся только иконки.</p>
+
+        <table class="gtable">
+            <thead><tr><th>Секция</th><th>Пункты</th><th>Доступно</th></tr></thead>
+            <tbody>
+                <tr><td><em>(без секции)</em></td><td>🏠 Дашборд &nbsp;·&nbsp; ✅ Мои задачи</td><td>Всем</td></tr>
+                <tr><td><strong>Работа с рисками</strong></td><td>🏢 Организации &nbsp;·&nbsp; ⚙️ Процессы &nbsp;·&nbsp; ⚠️ Реестр рисков &nbsp;·&nbsp; 🛡️ Планы обработки</td><td>Всем</td></tr>
+                <tr><td><strong>Аналитика</strong></td><td>📋 Нормативная база &nbsp;·&nbsp; 👥 Матрица ответственности &nbsp;·&nbsp; 🔄 Workflow рисков &nbsp;·&nbsp; 📊 Операционная аналитика &nbsp;·&nbsp; 📖 Методика &nbsp;·&nbsp; 📗 Руководство</td><td>Всем</td></tr>
+                <tr><td><strong>Администрирование</strong></td><td>👤 Пользователи &nbsp;·&nbsp; 🎓 Эксперты &nbsp;·&nbsp; 🔍 Качество данных &nbsp;·&nbsp; 📝 Журнал аудита</td><td>Только admin</td></tr>
+            </tbody>
+        </table>
+
+        <div class="tip"><strong>Мои задачи</strong> — это не весь реестр, а только то, что ожидает именно вашего действия прямо сейчас: согласования, оценки, обработка просроченных планов.</div>
+    </div>
+</div>
+
+<!-- ОРГАНИЗАЦИЯ -->
+<div class="guide-section" id="s-company">
+    <div class="guide-section-hdr"><span class="ico">🏢</span><h2>4. Шаг 1 — Добавить организацию</h2></div>
+    <div class="guide-body">
+        <div class="where">📍 Меню → Работа с рисками → Организации</div>
+
+        <div class="steps">
+            <div class="step"><div class="step-n">1</div><div class="step-body">Нажмите кнопку <strong>«Добавить организацию»</strong> в правом верхнем углу страницы.</div></div>
+            <div class="step"><div class="step-n">2</div><div class="step-body">Заполните форму:<br>
+                <table class="ftable" style="margin-top:6px;">
+                    <thead><tr><th>Поле</th><th>Описание</th><th>Пример</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Название</strong> <span class="req">*</span></td><td>Полное название организации</td><td class="eg">ООО «Кибербезопасность Казахстана»</td></tr>
+                        <tr><td>Описание</td><td>Краткое описание деятельности</td><td class="eg">Разработка и внедрение систем ИБ</td></tr>
+                    </tbody>
+                </table>
+            </div></div>
+            <div class="step"><div class="step-n">3</div><div class="step-body">Нажмите <strong>«Сохранить»</strong>. Организация появится в списке.</div></div>
+        </div>
+
+        <div class="tip"><strong>Зачем?</strong> Организация — это контейнер для всех ваших процессов и рисков. Одна система может содержать несколько организаций.</div>
+    </div>
+</div>
+
+<!-- ПРОЦЕСС -->
+<div class="guide-section" id="s-process">
+    <div class="guide-section-hdr"><span class="ico">⚙️</span><h2>5. Шаг 2 — Добавить процесс</h2></div>
+    <div class="guide-body">
+        <div class="where">📍 Меню → Работа с рисками → Процессы</div>
+
+        <div class="steps">
+            <div class="step"><div class="step-n">1</div><div class="step-body">Нажмите <strong>«Добавить процесс»</strong>.</div></div>
+            <div class="step"><div class="step-n">2</div><div class="step-body">Заполните форму:
+                <table class="ftable" style="margin-top:6px;">
+                    <thead><tr><th>Поле</th><th>Описание</th><th>Пример</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Название</strong> <span class="req">*</span></td><td>Название бизнес-процесса</td><td class="eg">Реагирование на инциденты ИБ</td></tr>
+                        <tr><td><strong>Организация</strong> <span class="req">*</span></td><td>Выберите из списка</td><td class="eg">ООО «Кибербезопасность Казахстана»</td></tr>
+                        <tr><td>Ответственный</td><td>ФИО или должность владельца процесса</td><td class="eg">Начальник отдела ИБ</td></tr>
+                        <tr><td>Описание</td><td>Что делает этот процесс</td><td class="eg">Обнаружение, анализ и ликвидация инцидентов</td></tr>
+                    </tbody>
+                </table>
+            </div></div>
+            <div class="step"><div class="step-n">3</div><div class="step-body">Нажмите <strong>«Сохранить»</strong>.</div></div>
+            <div class="step"><div class="step-n">4</div><div class="step-body"><strong>(Опционально) Добавьте подпроцессы.</strong> Откройте созданный процесс, нажмите «Добавить подпроцесс». Подпроцесс — конкретный шаг внутри процесса. <span class="eg">Пример: «Приём и регистрация заявки».</span> Риски можно привязывать к подпроцессам для точности.</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- РИСК -->
+<div class="guide-section" id="s-risk">
+    <div class="guide-section-hdr"><span class="ico">⚠️</span><h2>6. Шаг 3 — Зарегистрировать риск</h2></div>
+    <div class="guide-body">
+        <div class="where">📍 Меню → Работа с рисками → Реестр рисков</div>
+
+        <div class="steps">
+            <div class="step"><div class="step-n">1</div><div class="step-body">Нажмите <strong>«Добавить риск»</strong> (или «Добавить пробел» — это одно и то же).</div></div>
+            <div class="step"><div class="step-n">2</div><div class="step-body">
+                <strong>Блок 1 — Где находится риск:</strong>
+                <table class="ftable" style="margin-top:6px;">
+                    <thead><tr><th>Поле</th><th>Что указать</th><th>Пример</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Процесс</strong> <span class="req">*</span></td><td>Выберите из списка</td><td class="eg">Реагирование на инциденты ИБ</td></tr>
+                        <tr><td>Шаг процесса</td><td>Подпроцесс (если есть)</td><td class="eg">Приём и регистрация заявки</td></tr>
+                        <tr><td><strong>Описание риска</strong> <span class="req">*</span></td><td>Чётко опишите, в чём проблема</td><td class="eg">Отсутствует формальная процедура классификации инцидентов по критичности</td></tr>
+                    </tbody>
+                </table>
+            </div></div>
+            <div class="step"><div class="step-n">3</div><div class="step-body">
+                <strong>Блок 2 — Простая оценка:</strong>
+                <table class="ftable" style="margin-top:6px;">
+                    <thead><tr><th>Поле</th><th>Шкала</th><th>Пример</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Вероятность</strong> <span class="req">*</span></td><td>1 = редко, 2 = иногда, 3 = часто</td><td class="eg">2</td></tr>
+                        <tr><td><strong>Уязвимость</strong> <span class="req">*</span></td><td>1 = слабая, 2 = средняя, 3 = высокая</td><td class="eg">2</td></tr>
+                        <tr><td><strong>Влияние</strong> <span class="req">*</span></td><td>0 = нет влияния, 9 = критическое</td><td class="eg">7</td></tr>
+                        <tr><td>Эффективность контроля</td><td>0 = нет контроля, 1 = полный контроль</td><td class="eg">0.1</td></tr>
+                    </tbody>
+                </table>
+                Используйте кнопки <strong>«1 · 2 · 3»</strong> для быстрого ввода. Расчёт показывается мгновенно в блоке «Автооценка» — раскройте его, чтобы увидеть уровень риска до сохранения.
+            </div></div>
+            <div class="step"><div class="step-n">4</div><div class="step-body">
+                <strong>Блок 3 — Ответственность и срок:</strong>
+                <table class="ftable" style="margin-top:6px;">
+                    <thead><tr><th>Поле</th><th>Что указать</th><th>Пример</th></tr></thead>
+                    <tbody>
+                        <tr><td>Статус</td><td>Оставьте <strong>Draft</strong> для нового риска</td><td class="eg">Draft</td></tr>
+                        <tr><td>Владелец процесса</td><td>Кто отвечает за процесс</td><td class="eg">Иванов А.С.</td></tr>
+                        <tr><td>Ответственный за улучшение</td><td>Кто будет устранять риск</td><td class="eg">Петров К.В.</td></tr>
+                        <tr><td>Срок выполнения</td><td>Дата, к которой риск должен быть обработан</td><td class="eg">2026-09-01</td></tr>
+                    </tbody>
+                </table>
+            </div></div>
+            <div class="step"><div class="step-n">5</div><div class="step-body">Нажмите <strong>«Сохранить пробел»</strong>. Система рассчитает уровень риска автоматически.</div></div>
+        </div>
+
+        <div class="tip"><strong>Кнопка «Автозаполнить»</strong> в блоке «Автооценка» — автоматически предложит статус, срок и ответственных исходя из рассчитанного уровня риска. Полезно для быстрого старта.</div>
+
+        <h3>Как читать результат расчёта</h3>
+        <table class="gtable">
+            <thead><tr><th>Показатель</th><th>Формула</th><th>Значение</th></tr></thead>
+            <tbody>
+                <tr><td>Потенциал</td><td>max(Вероятность + Уязвимость − 1, 0)</td><td>Насколько реален риск</td></tr>
+                <tr><td>Начальный риск</td><td>Потенциал × Влияние</td><td>Риск без контроля</td></tr>
+                <tr><td><strong>Остаточный риск</strong></td><td>Начальный риск × (1 − Контроль)</td><td><strong>Фактический уровень угрозы</strong></td></tr>
+                <tr><td>Уровень</td><td>≤ 3.9 = Низкий · ≤ 6.9 = Средний · > 6.9 = Высокий</td><td>Цветовой бейдж в реестре</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- WORKFLOW -->
+<div class="guide-section" id="s-workflow">
+    <div class="guide-section-hdr"><span class="ico">🔄</span><h2>7. Жизненный цикл риска</h2></div>
+    <div class="guide-body">
+        <p>После создания риск находится в статусе <strong>Draft</strong>. Чтобы риск был официально признан и начали приниматься меры, его нужно провести через workflow.</p>
+
+        <h3>Нормальный путь</h3>
+        <div class="sflow">
+            <span class="sp sp-draft">Draft</span><span class="sarr">→</span>
+            <span class="sp sp-review">In Review</span><span class="sarr">→</span>
+            <span class="sp sp-approv">Approved</span><span class="sarr">→</span>
+            <span class="sp sp-inprog">In Progress</span><span class="sarr">→</span>
+            <span class="sp sp-closed">Closed</span>
+        </div>
+
+        <h3>Возврат на доработку</h3>
+        <div class="sflow">
+            <span class="sp sp-review">In Review</span><span class="sarr">→</span>
+            <span class="sp sp-return">Returned</span><span class="sarr">→</span>
+            <span class="sp sp-draft">Draft</span><span class="sarr">→</span>
+            <span class="sp sp-review">In Review</span><span class="sarr">→</span>
+            <span class="sp sp-approv">Approved</span><span class="sarr">…</span>
+        </div>
+
+        <h3>Кто что делает</h3>
+        <table class="gtable">
+            <thead><tr><th>Действие в системе</th><th>Переход</th><th>Роль</th><th>Что это значит</th></tr></thead>
+            <tbody>
+                <tr><td><strong>«На согласование»</strong></td><td>Draft / Returned → In Review</td><td>admin, expert</td><td>Эксперт или владелец процесса закончил оценку и отправляет риск на проверку менеджеру</td></tr>
+                <tr><td><strong>«Утвердить риск»</strong></td><td>In Review → Approved</td><td>admin, risk_manager</td><td>Менеджер рисков проверил и официально признаёт риск реальным</td></tr>
+                <tr><td><strong>«Начать обработку»</strong></td><td>Approved → In Progress</td><td>admin, risk_manager, process_owner</td><td>Ответственный начинает работать над устранением риска</td></tr>
+                <tr><td><strong>«Закрыть риск»</strong></td><td>In Progress / Approved → Closed</td><td>admin, risk_manager</td><td>Риск устранён или принят — жизненный цикл завершён</td></tr>
+                <tr><td><strong>«Вернуть на доработку»</strong></td><td>In Review / Approved / In Progress → Returned</td><td>admin, risk_manager, process_owner</td><td>Обнаружены ошибки или нужны уточнения — риск возвращается автору</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Как выполнить действие workflow</h3>
+        <div class="steps">
+            <div class="step"><div class="step-n">1</div><div class="step-body">Откройте риск в реестре (<strong>Реестр рисков → Редактировать</strong>) или перейдите на страницу <strong>Workflow рисков</strong>.</div></div>
+            <div class="step"><div class="step-n">2</div><div class="step-body">Найдите блок действий в правом столбце таблицы. Доступные для вашей роли кнопки отображаются автоматически.</div></div>
+            <div class="step"><div class="step-n">3</div><div class="step-body">Введите <strong>комментарий</strong> в поле над кнопкой (необязательно, но рекомендуется — особенно при возврате).</div></div>
+            <div class="step"><div class="step-n">4</div><div class="step-body">Нажмите кнопку действия. Статус обновится мгновенно, запись появится в истории.</div></div>
+        </div>
+
+        <div class="scenario">
+            <strong>Пример полного цикла:</strong><br>
+            1. Эксперт создаёт риск (Draft) → нажимает «На согласование» → риск становится In Review.<br>
+            2. Менеджер рисков проверяет → нажимает «Утвердить риск» → риск становится Approved.<br>
+            3. Владелец процесса нажимает «Начать обработку» → риск становится In Progress.<br>
+            4. После выполнения мер менеджер нажимает «Закрыть риск» → риск становится Closed.
+        </div>
+
+        <div class="tip"><strong>История workflow</strong> — все переходы сохраняются с датой, пользователем и комментарием. Посмотреть: <strong>Аналитика → Workflow рисков → вкладка «История согласования»</strong>.</div>
+    </div>
+</div>
+
+<!-- ПЛАНЫ ОБРАБОТКИ -->
+<div class="guide-section" id="s-treatment">
+    <div class="guide-section-hdr"><span class="ico">🛡️</span><h2>8. Добавить план обработки</h2></div>
+    <div class="guide-body">
+        <div class="where">📍 Меню → Работа с рисками → Планы обработки</div>
+        <p>План обработки — это конкретное действие по снижению риска. К одному риску можно добавить несколько планов.</p>
+
+        <div class="steps">
+            <div class="step"><div class="step-n">1</div><div class="step-body">Нажмите <strong>«Добавить план обработки»</strong> или перейдите в реестр рисков → нажмите <strong>«Добавить улучшение»</strong> рядом с нужным риском.</div></div>
+            <div class="step"><div class="step-n">2</div><div class="step-body">Заполните форму:
+                <table class="ftable" style="margin-top:6px;">
+                    <thead><tr><th>Поле</th><th>Что указать</th><th>Пример</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Название меры</strong> <span class="req">*</span></td><td>Конкретное действие</td><td class="eg">Внедрить матрицу классификации инцидентов</td></tr>
+                        <tr><td><strong>Риск</strong> <span class="req">*</span></td><td>К какому риску относится</td><td class="eg">Выбрать из списка</td></tr>
+                        <tr><td>Описание</td><td>Подробности</td><td class="eg">Разработать и утвердить документ с критериями P1/P2/P3</td></tr>
+                        <tr><td>Ответственный</td><td>Кто выполняет</td><td class="eg">Петров К.В.</td></tr>
+                        <tr><td>Срок</td><td>Дата завершения</td><td class="eg">2026-08-01</td></tr>
+                        <tr><td>Статус</td><td>Начальный статус</td><td class="eg">Planned</td></tr>
+                        <tr><td>Прогресс</td><td>0–100%</td><td class="eg">0</td></tr>
+                    </tbody>
+                </table>
+            </div></div>
+            <div class="step"><div class="step-n">3</div><div class="step-body">Нажмите <strong>«Сохранить»</strong>.</div></div>
+            <div class="step"><div class="step-n">4</div><div class="step-body">По мере выполнения регулярно обновляйте <strong>Прогресс</strong> и <strong>Статус</strong>. Когда мера выполнена — поставьте статус <strong>Completed</strong> и прогресс <strong>100%</strong>.</div></div>
+        </div>
+
+        <h3>Статусы планов обработки</h3>
+        <table class="gtable">
+            <thead><tr><th>Статус</th><th>Когда ставить</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Planned</strong></td><td>Мера запланирована, работа ещё не началась</td></tr>
+                <tr><td><strong>In progress</strong></td><td>Работа идёт прямо сейчас</td></tr>
+                <tr><td><strong>Waiting validation</strong></td><td>Работа завершена, ожидает проверки эффективности</td></tr>
+                <tr><td><strong>Completed</strong></td><td>Мера выполнена и её эффективность подтверждена</td></tr>
+                <tr><td><strong>Accepted</strong></td><td>Риск принят без снижения — меры не требуются</td></tr>
+                <tr><td><strong>Cancelled</strong></td><td>Мера отменена</td></tr>
+            </tbody>
+        </table>
+
+        <div class="warn"><strong>Просроченные меры</strong> — если дата прошла, а статус не Completed/Accepted/Cancelled, мера считается просроченной и выделяется красным в «Мои задачи».</div>
+    </div>
+</div>
+
+<!-- МОИ ЗАДАЧИ -->
+<div class="guide-section" id="s-mytasks">
+    <div class="guide-section-hdr"><span class="ico">✅</span><h2>9. Мои задачи</h2></div>
+    <div class="guide-body">
+        <div class="where">📍 Меню → Мои задачи</div>
+        <p>Страница показывает <strong>только вашу личную очередь</strong> — то, что ожидает именно вашего действия. Делится на три группы:</p>
+
+        <table class="gtable">
+            <thead><tr><th>Группа</th><th>Что здесь</th><th>Что нужно сделать</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Workflow-задачи</strong></td><td>Риски, для которых ваша роль может выполнить следующее действие</td><td>Утвердить, вернуть, начать обработку, закрыть</td></tr>
+                <tr><td><strong>Экспертные оценки</strong></td><td>Риски, ожидающие вашей экспертной оценки</td><td>Нажать «Оценить» и заполнить оценку</td></tr>
+                <tr><td><strong>Меры обработки</strong></td><td>Планы, где вы указаны как ответственный и статус активный</td><td>Обновить прогресс, сменить статус</td></tr>
+            </tbody>
+        </table>
+
+        <div class="tip">Общий счётчик задач показывается на дашборде в KPI-карточках. Откройте «Мои задачи» в начале рабочего дня, чтобы понять, что требует действий.</div>
+    </div>
+</div>
+
+<!-- АНАЛИТИКА -->
+<div class="guide-section" id="s-analytics">
+    <div class="guide-section-hdr"><span class="ico">📊</span><h2>10. Аналитика и отчёты</h2></div>
+    <div class="guide-body">
+        <h3>🏠 Дашборд</h3>
+        <p>Персонализированная сводка по вашей роли. admin и risk_manager видят все KPI, список критичных рисков, статусы и ближайшие планы. process_owner — только свои процессы. expert — очередь задач на оценку.</p>
+
+        <h3>📊 Операционная аналитика</h3>
+        <div class="where">📍 Аналитика → Операционная аналитика</div>
+        <p>Сводная статистика: общее количество рисков, распределение по уровням (Высокий/Средний/Низкий), доля просроченных, среднее и максимальное значение остаточного риска, скорость закрытия рисков. Графики и диаграммы строятся автоматически.</p>
+
+        <h3>🔄 Workflow рисков</h3>
+        <div class="where">📍 Аналитика → Workflow рисков</div>
+        <p>Две таблицы: <strong>«Риски на согласовании»</strong> — все риски в статусе In Review с кнопками действий. <strong>«История согласования»</strong> — полный лог всех переходов: кто, когда, с каким комментарием.</p>
+
+        <h3>👥 Матрица ответственности</h3>
+        <div class="where">📍 Аналитика → Матрица ответственности</div>
+        <p>Показывает, кто из сотрудников за какие риски и процессы отвечает. Удобно для разбора загруженности команды.</p>
+
+        <h3>📤 Экспорт данных</h3>
+        <p>В реестре рисков (<strong>Реестр рисков → кнопка «Экспорт CSV»</strong>) выгружается текущая выборка с учётом всех активных фильтров. Используйте фильтры для получения нужного среза данных перед экспортом.</p>
+    </div>
+</div>
+
+<!-- НОРМАТИВНАЯ БАЗА -->
+<div class="guide-section" id="s-compliance">
+    <div class="guide-section-hdr"><span class="ico">📋</span><h2>11. Нормативная база</h2></div>
+    <div class="guide-body">
+        <div class="where">📍 Аналитика → Нормативная база</div>
+        <p>Раздел показывает соответствие системы четырём стандартам:</p>
+        <ul>
+            <li><strong>ISO/IEC 27001:2022</strong> — управление информационной безопасностью</li>
+            <li><strong>IEC 62443</strong> — кибербезопасность промышленных систем</li>
+            <li><strong>NIST CSF</strong> — фреймворк кибербезопасности</li>
+            <li><strong>NISTIR 8259</strong> — безопасность IoT</li>
+        </ul>
+
+        <h3>Как добавить доказательство соответствия</h3>
+        <div class="steps">
+            <div class="step"><div class="step-n">1</div><div class="step-body">Откройте нужный стандарт → выберите требование.</div></div>
+            <div class="step"><div class="step-n">2</div><div class="step-body">Нажмите <strong>«Добавить доказательство»</strong>.</div></div>
+            <div class="step"><div class="step-n">3</div><div class="step-body">Заполните: описание доказательства, дату проверки, статус (Compliant / Partial / Non-compliant).</div></div>
+            <div class="step"><div class="step-n">4</div><div class="step-body">Нажмите <strong>«Сохранить»</strong>. Процент соответствия по стандарту обновится автоматически.</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- АДМИНИСТРИРОВАНИЕ -->
+<div class="guide-section" id="s-admin">
+    <div class="guide-section-hdr"><span class="ico">⚙️</span><h2>12. Администрирование</h2></div>
+    <div class="guide-body">
+        <p>Раздел виден только пользователям с ролью <strong>admin</strong>.</p>
+
+        <h3>Создать нового пользователя</h3>
+        <div class="where">📍 Администрирование → Пользователи</div>
+        <div class="steps">
+            <div class="step"><div class="step-n">1</div><div class="step-body">Нажмите <strong>«Добавить пользователя»</strong>.</div></div>
+            <div class="step"><div class="step-n">2</div><div class="step-body">Укажите <strong>Имя пользователя</strong> (логин), <strong>Пароль</strong> и <strong>Роль</strong>.</div></div>
+            <div class="step"><div class="step-n">3</div><div class="step-body">Если роль — <strong>expert</strong>, выберите эксперта из справочника в поле «Эксперт». Сначала создайте запись эксперта в разделе <strong>Эксперты</strong>.</div></div>
+            <div class="step"><div class="step-n">4</div><div class="step-body">Нажмите <strong>«Создать»</strong>.</div></div>
+        </div>
+
+        <h3>Качество данных</h3>
+        <div class="where">📍 Администрирование → Качество данных</div>
+        <p>Автоматический аудит полноты данных. Показывает риски без оценок, процессы без рисков, меры без ответственных. Полезно запускать раз в неделю, чтобы найти незаполненные записи.</p>
+
+        <h3>Журнал аудита</h3>
+        <div class="where">📍 Администрирование → Журнал аудита</div>
+        <p>Каждое действие в системе записывается: кто, когда, что изменил. Записи нельзя удалить. Используйте для расследований инцидентов и контроля.</p>
+
+        <div class="warn"><strong>Удаление пользователя необратимо.</strong> Перед удалением убедитесь, что на пользователя не назначены активные риски или планы обработки.</div>
+    </div>
+</div>
+
+<!-- FAQ -->
+<div class="guide-section" id="s-faq">
+    <div class="guide-section-hdr"><span class="ico">❓</span><h2>13. Частые вопросы</h2></div>
+    <div class="guide-body">
+        <h3>Не вижу кнопку «Добавить риск» — почему?</h3>
+        <p>Кнопка добавления доступна только ролям admin, risk_manager и process_owner. Если вы аудитор или эксперт без соответствующих прав — обратитесь к администратору.</p>
+
+        <h3>Нажал «На согласование», но кнопка не появляется</h3>
+        <p>Кнопки workflow показываются только для рисков в подходящем статусе и только вашей роли. «На согласование» доступно ролям admin и expert только из статусов Draft и Returned.</p>
+
+        <h3>Как изменить пароль?</h3>
+        <p>Администратор может сменить пароль через <strong>Администрирование → Пользователи → Редактировать</strong>. Поле пароля можно оставить пустым — тогда текущий пароль сохранится.</p>
+
+        <h3>Как посмотреть, кто изменил риск?</h3>
+        <p>Откройте <strong>Аналитика → Workflow рисков → История согласования</strong> — там все переходы с именами пользователей. Для полного лога изменений — <strong>Администрирование → Журнал аудита</strong> (только admin).</p>
+
+        <h3>Риск в статусе Returned — что делать?</h3>
+        <p>Прочитайте комментарий в истории workflow (там указано, что нужно исправить). Исправьте описание или оценки в форме редактирования. После сохранения нажмите <strong>«На согласование»</strong> снова.</p>
+
+        <h3>Можно ли закрыть риск без плана обработки?</h3>
+        <p>Технически — да, план обработки не является обязательным условием для перехода в Closed. Но методологически рекомендуется добавлять хотя бы одно действие, фиксирующее принятое решение.</p>
+    </div>
+</div>
+
+</div>
+{% endblock %}

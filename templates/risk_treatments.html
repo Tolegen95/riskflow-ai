@@ -1,0 +1,108 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .treatment-section { background:white; border:1px solid #e2e8f0; border-radius:8px; }
+    .treatment-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:12px 14px; border-bottom:1px solid #e2e8f0; }
+    .treatment-body { padding:14px; }
+    .treatment-filters { display:flex; flex-wrap:wrap; gap:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:14px; align-items:flex-end; }
+    .treatment-filters label { display:block; color:#475569; font-size:12px; font-weight:700; margin-bottom:4px; text-transform:uppercase; }
+    .treatment-filters select, .treatment-filters input { border:1px solid #cbd5e1; border-radius:6px; padding:7px; background:white; }
+    .treatment-scroll { max-width:100%; overflow-x:auto; }
+    .treatment-table { width:100%; border-collapse:collapse; font-size:14px; }
+    .treatment-table th, .treatment-table td { border:1px solid #e2e8f0; padding:8px 10px; text-align:left; vertical-align:top; }
+    .treatment-table th { background:#f8fafc; color:#334155; white-space:nowrap; }
+    .progress-track { height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden; min-width:80px; }
+    .progress-fill { height:100%; background:#2563eb; }
+    .status-badge { display:inline-block; border-radius:999px; padding:3px 8px; font-size:12px; font-weight:700; background:#e0f2fe; color:#075985; white-space:nowrap; }
+    .overdue { color:#b91c1c; font-weight:700; }
+</style>
+
+<div class="treatment-section">
+    <div class="treatment-header">
+        <div>
+            <h2 class="text-xl font-semibold">План рекомендаций</h2>
+            <p class="text-sm text-gray-600">Что нужно улучшить в процессах CSIRT, кто отвечает и к какому сроку.</p>
+        </div>
+        {% if session.get('role') in ['admin', 'risk_manager', 'process_owner'] %}
+            <a href="{{ url_for('add_risk_treatment') }}" class="bg-blue-500 text-white px-4 py-2 rounded whitespace-nowrap">+ Добавить</a>
+        {% endif %}
+    </div>
+    <div class="treatment-body">
+        <form method="GET" class="treatment-filters">
+            <div>
+                <label>Статус</label>
+                <select name="status">
+                    <option value="">Все</option>
+                    {% for status in ['Planned', 'In progress', 'Waiting validation', 'Completed', 'Accepted', 'Cancelled'] %}
+                        <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Ответственный</label>
+                <input name="owner" value="{{ filters.owner }}" placeholder="Имя или логин">
+            </div>
+            <div>
+                <label class="flex items-center gap-2 normal-case text-sm font-normal">
+                    <input type="checkbox" name="overdue" value="1" {% if filters.overdue %}checked{% endif %} class="w-auto">
+                    Только просроченные
+                </label>
+            </div>
+            <div class="flex gap-2">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded" type="submit">Фильтр</button>
+                <a href="{{ url_for('list_risk_treatments') }}" class="bg-gray-500 text-white px-4 py-2 rounded">Сброс</a>
+            </div>
+        </form>
+
+        <div class="treatment-scroll">
+            <table class="treatment-table">
+                <thead>
+                    <tr>
+                        <th>Процесс / Подпроцесс</th>
+                        <th>Пробел</th>
+                        <th>Рекомендация</th>
+                        <th>Ответственный</th>
+                        <th>Срок</th>
+                        <th>Прогресс</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in treatments %}
+                        {% set overdue = item[9] and item[9] < now and item[14] not in ('Completed','Accepted','Cancelled') %}
+                        <tr>
+                            <td>
+                                <div>{{ item[1] }}</div>
+                                {% if item[2] %}<div class="text-gray-500 text-xs">{{ item[2] }}</div>{% endif %}
+                            </td>
+                            <td class="text-gray-700">{{ (item[3] or '')[:80] }}{% if (item[3] or '') | length > 80 %}…{% endif %}</td>
+                            <td class="font-medium">{{ item[6] }}</td>
+                            <td>{{ item[8] or '—' }}</td>
+                            <td class="{{ 'overdue' if overdue else '' }}">{{ item[9] or '—' }}</td>
+                            <td>
+                                <div class="text-xs font-semibold mb-1">{{ item[13] or 0 }}%</div>
+                                <div class="progress-track"><div class="progress-fill" style="width:{{ item[13] or 0 }}%"></div></div>
+                            </td>
+                            <td><span class="status-badge">{{ item[14] }}</span></td>
+                            <td>
+                                <a href="{{ url_for('edit_process_risk', id=item[16]) }}" class="text-purple-600 text-sm">Пробел</a>
+                                {% if can_edit_treatments %}
+                                    <a href="{{ url_for('edit_risk_treatment', id=item[0]) }}" class="text-blue-500 text-sm block mt-1">Изменить</a>
+                                {% endif %}
+                                {% if session.get('role') == 'admin' %}
+                                    <form action="{{ url_for('delete_risk_treatment', id=item[0]) }}" method="POST" onsubmit="return confirm('Удалить?')">
+                                        <button class="text-red-500 text-sm mt-1">Удалить</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="8" class="text-gray-500 py-4 text-center">Рекомендации пока не добавлены.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

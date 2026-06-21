@@ -1,0 +1,192 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .risk-section {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+    .risk-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .risk-body { padding: 14px; }
+    .risk-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+        padding: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        align-items: flex-end;
+    }
+    .risk-filters label { display: block; color: #475569; font-size: 12px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; }
+    .risk-filters input, .risk-filters select { border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px; background: white; }
+    .risk-kpis {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .risk-kpi {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 10px 16px;
+        min-width: 100px;
+    }
+    .risk-kpi-value { font-size: 22px; font-weight: 800; color: #0f172a; }
+    .risk-kpi-label { color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+    .risk-scroll { max-width: 100%; overflow-x: auto; }
+    .risk-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .risk-table th, .risk-table td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; vertical-align: top; }
+    .risk-table th { background: #f8fafc; color: #334155; font-weight: 700; white-space: nowrap; }
+    .risk-badge { display: inline-block; border-radius: 999px; padding: 3px 8px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .risk-low    { background: #dcfce7; color: #166534; }
+    .risk-medium { background: #fef3c7; color: #92400e; }
+    .risk-high   { background: #fee2e2; color: #991b1b; }
+    .status-badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 12px; font-weight: 700; white-space: nowrap; background: #f1f5f9; color: #475569; }
+    .status-draft      { background: #f1f5f9; color: #475569; }
+    .status-inreview   { background: #eff6ff; color: #1d4ed8; }
+    .status-approved   { background: #ecfdf5; color: #065f46; }
+    .status-inprogress { background: #fef3c7; color: #92400e; }
+    .status-closed     { background: #f0fdf4; color: #166534; }
+    .status-returned   { background: #fff7ed; color: #c2410c; }
+    .ai-cell { max-width: 280px; font-size: 13px; color: #475569; }
+    .desc-cell { max-width: 240px; font-size: 13px; }
+</style>
+
+{% set total = risks | length %}
+{% set high_count = namespace(value=0) %}
+{% set open_count = namespace(value=0) %}
+{% for risk in risks %}
+    {% if risk[9] == 'Высокий' %}{% set high_count.value = high_count.value + 1 %}{% endif %}
+    {% if risk[15] not in ('Closed',) %}{% set open_count.value = open_count.value + 1 %}{% endif %}
+{% endfor %}
+
+<div class="risk-section">
+    <div class="risk-header">
+        <div>
+            <h2 class="text-xl font-semibold">Реестр пробелов</h2>
+            <p class="text-sm text-gray-600">Слабые места процессов CSIRT с оценкой риска и статусом устранения.</p>
+        </div>
+        <div class="flex flex-wrap gap-2 justify-end">
+            <a href="{{ url_for('export_process_risks_csv', **request.args.to_dict()) }}" class="bg-green-600 text-white px-4 py-2 rounded whitespace-nowrap">Экспорт CSV</a>
+            {% if session.get('role') in ['admin', 'risk_manager', 'process_owner'] %}
+                <a href="{{ url_for('add_process_risk') }}" class="bg-blue-500 text-white px-4 py-2 rounded whitespace-nowrap">+ Добавить</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="risk-body">
+        <form method="GET" class="risk-filters">
+            <div>
+                <label>Процесс</label>
+                <select name="process_id">
+                    <option value="">Все</option>
+                    {% for process in processes %}
+                        <option value="{{ process[0] }}" {% if filters.process_id|string == process[0]|string %}selected{% endif %}>{{ process[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Уровень риска</label>
+                <select name="risk_level">
+                    <option value="">Все</option>
+                    {% for level in ['Высокий', 'Средний', 'Низкий'] %}
+                        <option value="{{ level }}" {% if filters.risk_level == level %}selected{% endif %}>{{ level }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Статус</label>
+                <select name="status">
+                    <option value="">Все</option>
+                    {% for status in statuses %}
+                        <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="flex items-center gap-2 normal-case text-sm font-normal">
+                    <input type="checkbox" name="overdue" value="1" {% if filters.overdue %}checked{% endif %} class="w-auto">
+                    Просроченные
+                </label>
+            </div>
+            <div class="flex gap-2">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded" type="submit">Фильтр</button>
+                <a href="{{ url_for('list_process_risks') }}" class="bg-gray-500 text-white px-4 py-2 rounded">Сброс</a>
+            </div>
+        </form>
+
+        <div class="risk-kpis">
+            <div class="risk-kpi"><div class="risk-kpi-value">{{ total }}</div><div class="risk-kpi-label">Всего пробелов</div></div>
+            <div class="risk-kpi"><div class="risk-kpi-value" style="color:#991b1b">{{ high_count.value }}</div><div class="risk-kpi-label">Критичных</div></div>
+            <div class="risk-kpi"><div class="risk-kpi-value" style="color:#1d4ed8">{{ open_count.value }}</div><div class="risk-kpi-label">Незакрытых</div></div>
+        </div>
+
+        <div class="risk-scroll">
+            <table class="risk-table">
+                <thead>
+                    <tr>
+                        <th>Процесс / Подпроцесс</th>
+                        <th>Описание пробела</th>
+                        <th>Оценка</th>
+                        <th>Статус</th>
+                        <th>Ответственный</th>
+                        <th>Срок</th>
+                        <th>AI-рекомендация</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for risk in risks %}
+                        <tr>
+                            <td>
+                                <div>{{ risk[1] }}</div>
+                                {% if risk[2] %}<div class="text-gray-500 text-xs">{{ risk[2] }}</div>{% endif %}
+                            </td>
+                            <td class="desc-cell">{{ (risk[23] or '')[:120] }}{% if (risk[23] or '') | length > 120 %}…{% endif %}</td>
+                            <td>
+                                <div class="font-bold">{{ risk[8] | risk_number }}</div>
+                                <span class="risk-badge {{ 'risk-low' if risk[9] == 'Низкий' else 'risk-medium' if risk[9] == 'Средний' else 'risk-high' }}">
+                                    {{ risk[9] }}
+                                </span>
+                            </td>
+                            <td>
+                                {% set s = risk[15] %}
+                                <span class="status-badge {{ 'status-draft' if s == 'Draft' else 'status-inreview' if s == 'In Review' else 'status-approved' if s == 'Approved' else 'status-inprogress' if s == 'In Progress' else 'status-closed' if s == 'Closed' else 'status-returned' if s == 'Returned' else '' }}">{{ s }}</span>
+                            </td>
+                            <td>{{ risk[16] or '—' }}</td>
+                            <td class="{{ 'text-red-600 font-bold' if risk[18] and risk[18] < now and risk[15] != 'Closed' else '' }}">{{ risk[18] or '—' }}</td>
+                            <td class="ai-cell">{{ risk[10] or '' }}</td>
+                            <td>
+                                {% if can_edit_risks %}
+                                    <a href="{{ url_for('edit_process_risk', id=risk[0]) }}" class="text-blue-500 text-sm">Изменить</a>
+                                {% endif %}
+                                {% if session.get('role') in ['admin', 'risk_manager', 'process_owner'] %}
+                                    <a href="{{ url_for('add_risk_treatment', process_risk_id=risk[0]) }}" class="text-green-700 text-sm block mt-1">+ Рекомендация</a>
+                                {% endif %}
+                                <a href="{{ url_for('edit_process_risk', id=risk[0]) }}" class="text-purple-600 text-sm block mt-1">Оценить</a>
+                                {% for action_key, action_label in workflow_actions.get(risk[0], []) %}
+                                    <form action="{{ url_for('process_risk_workflow_action', id=risk[0]) }}" method="POST" class="mt-1">
+                                        <input type="hidden" name="action" value="{{ action_key }}">
+                                        <input name="comment" class="border rounded px-2 py-1 text-xs w-full mb-1" placeholder="Комментарий">
+                                        <button type="submit" class="text-slate-700 underline text-sm text-left">{{ action_label }}</button>
+                                    </form>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

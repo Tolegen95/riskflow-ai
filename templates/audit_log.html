@@ -1,0 +1,142 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .audit-section {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+    .audit-header {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 14px;
+    }
+    .audit-body {
+        padding: 14px;
+    }
+    .audit-filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+        padding: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+    .audit-filters label {
+        display: block;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+    .audit-filters input,
+    .audit-filters select {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 7px;
+        background: white;
+    }
+    .audit-scroll {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    .audit-table {
+        width: 100%;
+        min-width: 1180px;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    .audit-table th,
+    .audit-table td {
+        border: 1px solid #e2e8f0;
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+    }
+    .audit-table th {
+        background: #f8fafc;
+        color: #334155;
+        white-space: nowrap;
+    }
+    .audit-json {
+        max-width: 360px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: 12px;
+        color: #475569;
+    }
+</style>
+
+<div class="audit-section">
+    <div class="audit-header">
+        <h2 class="text-xl font-semibold">Журнал аудита</h2>
+        <p class="text-sm text-gray-600">Кто, когда и что изменил в оценках, рисках и экспертных голосованиях.</p>
+    </div>
+    <div class="audit-body">
+        <form method="GET" class="audit-filters">
+            <div>
+                <label>Entity</label>
+                <select name="entity_type">
+                    <option value="">Все</option>
+                    {% for entity_type in entity_types %}
+                        <option value="{{ entity_type }}" {% if filters.entity_type == entity_type %}selected{% endif %}>{{ entity_type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Action</label>
+                <select name="action">
+                    <option value="">Все</option>
+                    {% for action in actions %}
+                        <option value="{{ action }}" {% if filters.action == action %}selected{% endif %}>{{ action }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Пользователь</label>
+                <input name="username" value="{{ filters.username }}" placeholder="admin, Sara...">
+            </div>
+            <div class="flex items-end gap-2">
+                <button class="bg-blue-500 text-white px-4 py-2 rounded" type="submit">Фильтр</button>
+                <a href="{{ url_for('audit_log') }}" class="bg-gray-500 text-white px-4 py-2 rounded">Сброс</a>
+            </div>
+        </form>
+
+        <div class="audit-scroll">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Пользователь</th>
+                        <th>Action</th>
+                        <th>Entity</th>
+                        <th>ID</th>
+                        <th>Описание</th>
+                        <th>До</th>
+                        <th>После</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                        <tr>
+                            <td>{{ event[1] }}</td>
+                            <td>{{ event[2] or '-' }}</td>
+                            <td>{{ event[3] }}</td>
+                            <td>{{ event[4] }}</td>
+                            <td>{{ event[5] or '-' }}</td>
+                            <td>{{ event[6] or '' }}</td>
+                            <td class="audit-json">{{ event[7] or '' }}</td>
+                            <td class="audit-json">{{ event[8] or '' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="8" class="text-gray-500">Событий пока нет.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

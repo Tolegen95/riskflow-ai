@@ -1,0 +1,481 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .gap-page { max-width: 980px; }
+    .gap-header,
+    .gap-card,
+    .gap-details {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 14px;
+    }
+    .gap-header {
+        border-left: 4px solid #2563eb;
+        padding: 16px;
+    }
+    .gap-title {
+        color: #0f172a;
+        font-size: 22px;
+        font-weight: 800;
+    }
+    .gap-note {
+        color: #475569;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+    .gap-card-header {
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+        font-weight: 800;
+        padding: 12px 14px;
+    }
+    .gap-card-body {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        padding: 14px;
+    }
+    .gap-field label {
+        color: #334155;
+        display: block;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+    .gap-field input,
+    .gap-field select,
+    .gap-field textarea {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 8px;
+        width: 100%;
+    }
+    .gap-field textarea { min-height: 90px; }
+    .gap-wide { grid-column: 1 / -1; }
+    .gap-help {
+        color: #64748b;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    .quick-scale {
+        display: flex;
+        gap: 6px;
+        margin-top: 6px;
+    }
+    .quick-scale button {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 999px;
+        font-size: 12px;
+        padding: 3px 8px;
+    }
+    .gap-details summary {
+        cursor: pointer;
+        font-weight: 800;
+        padding: 12px 14px;
+    }
+    .gap-details-body {
+        border-top: 1px solid #e2e8f0;
+        padding: 14px;
+    }
+    .gap-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+    .gap-btn {
+        border-radius: 4px;
+        color: #ffffff;
+        display: inline-block;
+        font-weight: 700;
+        padding: 8px 12px;
+        text-decoration: none;
+    }
+    .gap-btn.primary { background: #2563eb; }
+    .gap-btn.secondary { background: #475569; }
+    .gap-btn.dark { background: #334155; }
+    .score-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    .score-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 10px;
+    }
+    .score-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .score-value {
+        color: #0f172a;
+        font-size: 20px;
+        font-weight: 800;
+        margin-top: 4px;
+    }
+    .risk-category-low { color: #15803d; }
+    .risk-category-medium { color: #b45309; }
+    .risk-category-high { color: #b91c1c; }
+</style>
+
+<div class="gap-page">
+    <section class="gap-header">
+        <div class="gap-title">{{ 'Редактировать пробел процесса реагирования' if risk else 'Добавить пробел процесса реагирования' }}</div>
+        <div class="gap-note">
+            Заполните только главное: где обнаружен пробел, в чем проблема, насколько он влияет на реагирование
+            и кто отвечает за улучшение. Расширенные справочники доступны ниже.
+        </div>
+    </section>
+
+    <form method="POST" id="riskForm">
+        <section class="gap-card">
+            <div class="gap-card-header">1. Где находится пробел</div>
+            <div class="gap-card-body">
+                <div class="gap-field">
+                    <label>Процесс CSIRT</label>
+                    <select name="process_id" id="processSelect" required>
+                        {% for process in form_data.processes %}
+                            <option value="{{ process[0] }}" {% if (risk and process[0] == risk[1]) or (selected_process_id and process[0] == selected_process_id) %}selected{% endif %}>{{ process[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="gap-field">
+                    <label>Шаг процесса</label>
+                    <select name="subprocess_id" id="subprocessSelect">
+                        <option value="">Не выбран</option>
+                        {% for sp in form_data.subprocesses %}
+                            <option value="{{ sp[0] }}" data-process-id="{{ sp[1] }}" data-responsible="{{ sp[3] or '' }}" {% if risk and sp[0] == risk[2] %}selected{% endif %}>{{ sp[2] }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="gap-help">Свяжите пробел с конкретным шагом реагирования, если он известен.</div>
+                </div>
+                <div class="gap-field gap-wide">
+                    <label>Описание пробела</label>
+                    <textarea name="risk_description" required placeholder="Например: отсутствует формальная процедура triage и критерии эскалации">{{ risk[7] if risk else '' }}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section class="gap-card">
+            <div class="gap-card-header">2. Простая оценка</div>
+            <div class="gap-card-body">
+                <div class="gap-field">
+                    <label>Вероятность проявления</label>
+                    <input type="number" step="0.1" min="0" max="3" name="probability" id="probabilityInput" value="{{ risk[8] if risk else '' }}" required>
+                    <div class="gap-help">1 низкая, 2 средняя, 3 высокая</div>
+                    <div class="quick-scale" data-target="probabilityInput"><button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button></div>
+                </div>
+                <div class="gap-field">
+                    <label>Выраженность слабого места</label>
+                    <input type="number" step="0.1" min="0" max="3" name="vulnerability_level" id="vulnerabilityInput" value="{{ risk[9] if risk else '1' }}" required>
+                    <div class="gap-help">1 слабая, 2 средняя, 3 высокая</div>
+                    <div class="quick-scale" data-target="vulnerabilityInput"><button type="button" data-value="1">1</button><button type="button" data-value="2">2</button><button type="button" data-value="3">3</button></div>
+                </div>
+                <div class="gap-field">
+                    <label>Влияние на реагирование</label>
+                    <input type="number" step="0.1" min="0" max="9" name="impact" id="impactInput" value="{{ risk[10] if risk else '' }}" required>
+                    <div class="gap-help">0 нет влияния, 9 критическое влияние</div>
+                </div>
+                <div class="gap-field">
+                    <label>Эффективность текущего контроля</label>
+                    <input type="number" step="0.01" min="0" max="1" name="control_effectiveness" id="controlInput" value="{{ risk[12] if risk else '0' }}">
+                    <div class="gap-help">0 контроля нет, 1 контроль полностью закрывает пробел</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="gap-card">
+            <div class="gap-card-header">3. Ответственность и срок</div>
+            <div class="gap-card-body">
+                <div class="gap-field">
+                    <label>Статус</label>
+                    {% set status_value = risk[20] if risk else 'Draft' %}
+                    <select name="status" id="statusSelect">
+                        {% for status in statuses %}
+                            <option value="{{ status }}" {% if status_value == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="gap-field">
+                    <label>Владелец процесса</label>
+                    <input name="risk_owner" id="riskOwnerInput" value="{{ risk[21] if risk else '' }}" placeholder="Например: Incident Manager">
+                </div>
+                <div class="gap-field">
+                    <label>Ответственный за улучшение</label>
+                    <input name="mitigation_owner" id="mitigationOwnerInput" value="{{ risk[22] if risk else '' }}" placeholder="Например: CSIRT Lead">
+                </div>
+                <div class="gap-field">
+                    <label>Срок выполнения</label>
+                    <input type="date" name="due_date" id="dueDateInput" value="{{ risk[23] if risk else '' }}">
+                </div>
+            </div>
+        </section>
+
+        <details class="gap-details">
+            <summary>Расширенные справочники и доказательная база</summary>
+            <div class="gap-details-body">
+                <div class="gap-card-body">
+                    <div class="gap-field">
+                        <label>Ресурс / зона процесса</label>
+                        <select name="asset_id" id="assetSelect">
+                            <option value="">Не выбрано</option>
+                            {% for asset in form_data.assets %}
+                                <option value="{{ asset[0] }}" {% if risk and asset[0] == risk[3] %}selected{% endif %}>{{ asset[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="gap-field">
+                        <label>Сценарий инцидента</label>
+                        <select name="threat_id">
+                            <option value="">Не выбран</option>
+                            {% for threat in form_data.threats %}
+                                <option value="{{ threat[0] }}" {% if risk and threat[0] == risk[4] %}selected{% endif %}>{{ threat[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="gap-field">
+                        <label>Слабое место процесса</label>
+                        <select name="vulnerability_id">
+                            <option value="">Не выбрано</option>
+                            {% for vulnerability in form_data.vulnerabilities %}
+                                <option value="{{ vulnerability[0] }}" {% if risk and vulnerability[0] == risk[5] %}selected{% endif %}>{{ vulnerability[2] }}: {{ vulnerability[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="gap-field">
+                        <label>Существующий контроль</label>
+                        <select name="control_measure_id">
+                            <option value="">Не выбран</option>
+                            {% for control in form_data.controls %}
+                                <option value="{{ control[0] }}" {% if risk and control[0] == risk[6] %}selected{% endif %}>{{ control[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="gap-field">
+                        <label>Стоимость улучшения</label>
+                        <input type="number" step="0.1" min="0" max="10" name="cost" id="costInput" value="{{ risk[16] if risk else '0' }}">
+                    </div>
+                    <div class="gap-field">
+                        <label>Источник оценки</label>
+                        {% set source_value = risk[24] if risk else 'Expert' %}
+                        <select name="assessment_source" id="sourceSelect">
+                            {% for source in ['Expert', 'System calculation', 'CVSS', 'Manual', 'AI suggestion', 'Imported'] %}
+                                <option value="{{ source }}" {% if source_value == source %}selected{% endif %}>{{ source }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="gap-field">
+                        <label>Достоверность</label>
+                        {% set confidence_value = risk[25] if risk else 'Medium' %}
+                        <select name="confidence" id="confidenceSelect">
+                            {% for confidence in ['Low', 'Medium', 'High'] %}
+                                <option value="{{ confidence }}" {% if confidence_value == confidence %}selected{% endif %}>{{ confidence }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="gap-field">
+                        <label>Дата пересмотра</label>
+                        <input type="date" name="last_reviewed_at" id="reviewedInput" value="{{ risk[27] if risk else '' }}">
+                    </div>
+                    <div class="gap-field">
+                        <label>Пользователь-владелец процесса</label>
+                        <select name="risk_owner_user_id">
+                            <option value="">Не назначен</option>
+                            {% for user in form_data.users %}
+                                <option value="{{ user[0] }}" {% if risk and risk[28] == user[0] %}selected{% endif %}>{{ user[1] }} - {{ user[2] | role_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="gap-field">
+                        <label>Пользователь-ответственный за улучшение</label>
+                        <select name="mitigation_owner_user_id">
+                            <option value="">Не назначен</option>
+                            {% for user in form_data.users %}
+                                <option value="{{ user[0] }}" {% if risk and risk[29] == user[0] %}selected{% endif %}>{{ user[1] }} - {{ user[2] | role_label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="gap-field gap-wide">
+                        <label>Доказательная база</label>
+                        <textarea name="evidence" placeholder="Статистика SOC, отчет аудита, интервью, результаты тестирования">{{ risk[26] if risk else '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="gap-details">
+            <summary>Автооценка</summary>
+            <div class="gap-details-body">
+                <div class="score-grid">
+                    <div class="score-card"><div class="score-label">Потенциал</div><div class="score-value" id="previewPotentiality">-</div></div>
+                    <div class="score-card"><div class="score-label">Начальная оценка</div><div class="score-value" id="previewInitial">-</div></div>
+                    <div class="score-card"><div class="score-label">Остаточная оценка</div><div class="score-value" id="previewResidual">-</div></div>
+                    <div class="score-card"><div class="score-label">Снижение</div><div class="score-value" id="previewReduction">-</div></div>
+                    <div class="score-card"><div class="score-label">Приоритет</div><div class="score-value" id="previewCategory">-</div></div>
+                    <div class="score-card"><div class="score-label">Очередность</div><div class="score-value" id="previewPriority">-</div></div>
+                </div>
+                <div class="gap-note" id="previewRecommendation"></div>
+                <button class="gap-btn dark" type="button" id="autoFillBtn">Автозаполнить ответственных, статус и срок</button>
+            </div>
+        </details>
+
+        <div class="gap-actions">
+            <button class="gap-btn primary" type="submit">Сохранить пробел</button>
+            {% if risk %}
+                <a href="{{ url_for('process_detail', id=risk[1]) }}" class="gap-btn secondary">Назад к процессу</a>
+            {% else %}
+                <a href="{{ url_for('list_process_risks') }}" class="gap-btn secondary">К реестру пробелов</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<script>
+(() => {
+    const processSelect = document.getElementById('processSelect');
+    const subprocessSelect = document.getElementById('subprocessSelect');
+    const assetSelect = document.getElementById('assetSelect');
+    const probabilityInput = document.getElementById('probabilityInput');
+    const vulnerabilityInput = document.getElementById('vulnerabilityInput');
+    const impactInput = document.getElementById('impactInput');
+    const controlInput = document.getElementById('controlInput');
+    const costInput = document.getElementById('costInput');
+    const riskOwnerInput = document.getElementById('riskOwnerInput');
+    const mitigationOwnerInput = document.getElementById('mitigationOwnerInput');
+    const dueDateInput = document.getElementById('dueDateInput');
+    const statusSelect = document.getElementById('statusSelect');
+    const confidenceSelect = document.getElementById('confidenceSelect');
+    const sourceSelect = document.getElementById('sourceSelect');
+    const reviewedInput = document.getElementById('reviewedInput');
+
+    const processes = {{ form_data.processes | tojson }};
+    const processAssets = {{ form_data.process_assets | tojson }};
+    const initialSubprocessId = "{{ risk[2] if risk and risk[2] else '' }}";
+    const initialAssetId = "{{ risk[3] if risk and risk[3] else '' }}";
+
+    function number(value) {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
+    function fmt(value) {
+        if (!Number.isFinite(value)) return '-';
+        return String(Math.trunc(value * 1000) / 1000).replace(/\.?0+$/, '');
+    }
+    function classifyRisk(value) {
+        if (value <= 3.9) return 'Низкий';
+        if (value <= 6.9) return 'Средний';
+        return 'Высокий';
+    }
+    function priority(reduction, assetValue = 8, cost = 0) {
+        const valueScore = assetValue >= 7 ? 3 : assetValue >= 4 ? 2 : 1;
+        const reductionScore = reduction >= 5 ? 3 : reduction >= 2 ? 2 : 1;
+        const costScore = cost <= 2 ? 3 : cost <= 5 ? 2 : 1;
+        const score = valueScore + reductionScore + costScore;
+        if (score >= 8) return 'HIGH';
+        if (score >= 5) return 'MEDIUM';
+        return 'LOW';
+    }
+    function recommendation(residual, control, vulnerability, category) {
+        const items = [];
+        if (residual > 7) items.push('Требуется приоритетное улучшение процесса.');
+        if (control <= 0) items.push('Нужно назначить или формализовать контроль.');
+        if (vulnerability >= 2.7) items.push('Слабое место выражено сильно: нужен короткий срок выполнения.');
+        if (!items.length && category === 'Средний') items.push('Нужен план улучшения и регулярный мониторинг.');
+        if (!items.length) items.push('Пробел допустим при сохранении текущих мер контроля.');
+        return items.join(' ');
+    }
+    function calculate() {
+        const probability = number(probabilityInput.value);
+        const vulnerability = number(vulnerabilityInput.value);
+        const impact = number(impactInput.value);
+        const control = Math.min(Math.max(number(controlInput.value), 0), 1);
+        const cost = number(costInput.value);
+        const potentiality = Math.max(probability + vulnerability - 1, 0);
+        const initial = potentiality * impact;
+        const residual = initial * (1 - control);
+        const reduction = initial - residual;
+        const category = classifyRisk(residual);
+        const priorityValue = priority(reduction, 8, cost);
+        document.getElementById('previewPotentiality').textContent = fmt(potentiality);
+        document.getElementById('previewInitial').textContent = fmt(initial);
+        document.getElementById('previewResidual').textContent = fmt(residual);
+        document.getElementById('previewReduction').textContent = fmt(reduction);
+        document.getElementById('previewCategory').textContent = category;
+        document.getElementById('previewCategory').className = `score-value ${category === 'Высокий' ? 'risk-category-high' : category === 'Средний' ? 'risk-category-medium' : 'risk-category-low'}`;
+        document.getElementById('previewPriority').textContent = priorityValue;
+        document.getElementById('previewRecommendation').textContent = recommendation(residual, control, vulnerability, category);
+        return {category, priorityValue};
+    }
+    function filterSubprocesses() {
+        const processId = processSelect.value;
+        Array.from(subprocessSelect.options).forEach(option => {
+            if (!option.value) {
+                option.hidden = false;
+                return;
+            }
+            option.hidden = option.dataset.processId !== processId;
+        });
+        if (subprocessSelect.selectedOptions[0]?.hidden) subprocessSelect.value = '';
+    }
+    function filterAssets() {
+        const processId = processSelect.value;
+        const related = processAssets.filter(item => String(item[0]) === String(processId));
+        const allowed = new Set(related.map(item => String(item[1])));
+        Array.from(assetSelect.options).forEach(option => {
+            if (!option.value) {
+                option.hidden = false;
+                return;
+            }
+            option.hidden = allowed.size > 0 && !allowed.has(option.value);
+        });
+        if (assetSelect.selectedOptions[0]?.hidden) assetSelect.value = '';
+    }
+    function autoOwners() {
+        const subprocessResponsible = subprocessSelect.selectedOptions[0]?.dataset.responsible || '';
+        const process = processes.find(item => String(item[0]) === String(processSelect.value));
+        const processOwner = process ? process[2] || '' : '';
+        if (!riskOwnerInput.value) riskOwnerInput.value = subprocessResponsible || processOwner;
+        if (!mitigationOwnerInput.value) mitigationOwnerInput.value = subprocessResponsible || processOwner;
+    }
+    function addDays(days) {
+        const date = new Date();
+        date.setDate(date.getDate() + days);
+        return date.toISOString().slice(0, 10);
+    }
+    function autoFillRegisterFields() {
+        const result = calculate();
+        if (!statusSelect.value || statusSelect.value === 'Draft') statusSelect.value = result.category === 'Высокий' ? 'In Progress' : 'Approved';
+        if (!confidenceSelect.value) confidenceSelect.value = result.category === 'Высокий' ? 'High' : 'Medium';
+        if (!sourceSelect.value) sourceSelect.value = 'Expert';
+        if (!dueDateInput.value) dueDateInput.value = result.category === 'Высокий' ? addDays(14) : result.category === 'Средний' ? addDays(30) : addDays(90);
+        if (!reviewedInput.value) reviewedInput.value = new Date().toISOString().slice(0, 10);
+        autoOwners();
+    }
+    document.querySelectorAll('.quick-scale button').forEach(button => {
+        button.addEventListener('click', () => {
+            document.getElementById(button.parentElement.dataset.target).value = button.dataset.value;
+            calculate();
+        });
+    });
+    [probabilityInput, vulnerabilityInput, impactInput, controlInput, costInput].forEach(input => input.addEventListener('input', calculate));
+    processSelect.addEventListener('change', () => {
+        filterSubprocesses();
+        filterAssets();
+        autoOwners();
+    });
+    subprocessSelect.addEventListener('change', autoOwners);
+    document.getElementById('autoFillBtn').addEventListener('click', autoFillRegisterFields);
+    filterSubprocesses();
+    filterAssets();
+    if (initialSubprocessId) subprocessSelect.value = initialSubprocessId;
+    if (initialAssetId) assetSelect.value = initialAssetId;
+    calculate();
+})();
+</script>
+{% endblock %}

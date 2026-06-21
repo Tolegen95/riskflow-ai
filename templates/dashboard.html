@@ -1,0 +1,514 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .dashboard-page { max-width: 100%; }
+    .dashboard-kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .dashboard-kpi,
+    .dashboard-panel {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+    .dashboard-kpi { padding: 14px; }
+    .dashboard-kpi-value {
+        color: #0f172a;
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1;
+    }
+    .dashboard-kpi-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 8px;
+        text-transform: uppercase;
+    }
+    .dashboard-kpi-alert .dashboard-kpi-value { color: #dc2626; }
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+        gap: 16px;
+        align-items: start;
+    }
+    .dashboard-panel-header {
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+        font-weight: 800;
+        padding: 12px 14px;
+    }
+    .dashboard-panel-body { padding: 14px; }
+    .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    .dashboard-table th,
+    .dashboard-table td {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 8px;
+        text-align: left;
+        vertical-align: top;
+    }
+    .dashboard-table th {
+        color: #475569;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+    .dashboard-bar {
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 9px;
+        overflow: hidden;
+        min-width: 90px;
+    }
+    .dashboard-bar-fill { background: #2563eb; height: 100%; }
+    .risk-badge {
+        border-radius: 999px;
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 3px 8px;
+        white-space: nowrap;
+    }
+    .risk-badge-low { background: #dcfce7; color: #166534; }
+    .risk-badge-medium { background: #fef3c7; color: #92400e; }
+    .risk-badge-high { background: #fee2e2; color: #991b1b; }
+    .status-badge {
+        border-radius: 4px;
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 2px 8px;
+        white-space: nowrap;
+    }
+    .status-draft     { background: #f1f5f9; color: #475569; }
+    .status-inreview  { background: #eff6ff; color: #1d4ed8; }
+    .status-approved  { background: #ecfdf5; color: #065f46; }
+    .status-inprogress{ background: #fef3c7; color: #92400e; }
+    .status-closed    { background: #f0fdf4; color: #166534; }
+    .status-returned  { background: #fff7ed; color: #c2410c; }
+    .onboarding-wizard {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        padding: 24px;
+    }
+    .wizard-steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 16px;
+    }
+    .wizard-step {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+        position: relative;
+        opacity: 0.55;
+    }
+    .wizard-step.done { border-color: #22c55e; background: #f0fdf4; opacity: 1; }
+    .wizard-step.active {
+        border-color: #2563eb;
+        background: #eff6ff;
+        box-shadow: 0 0 0 4px rgba(37,99,235,0.18);
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+    .wizard-step-num {
+        font-size: 24px;
+        font-weight: 800;
+        color: #94a3b8;
+        margin-bottom: 8px;
+    }
+    .wizard-step.done .wizard-step-num { color: #22c55e; }
+    .wizard-step.active .wizard-step-num {
+        color: #2563eb;
+        font-size: 32px;
+    }
+    .wizard-step-title { font-weight: 700; margin-bottom: 4px; }
+    .wizard-step.active .wizard-step-title { font-size: 16px; color: #1e40af; }
+    .wizard-step-desc { font-size: 13px; color: #64748b; }
+    .wizard-step.active .wizard-step-desc { color: #1d4ed8; }
+    @media (max-width: 1100px) { .dashboard-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .wizard-steps { grid-template-columns: 1fr; } }
+</style>
+
+{% set role = session.get('role') %}
+{% set summary = dashboard.summary %}
+{% set total = summary[0] or 0 %}
+{% set high = summary[1] or 0 %}
+{% set medium = summary[2] or 0 %}
+{% set low = summary[3] or 0 %}
+{% set overdue = summary[4] or 0 %}
+{% set closed = summary[5] or 0 %}
+{% set treatment_summary = dashboard.treatment_summary %}
+{% set treatment_total = treatment_summary[0] or 0 %}
+{% set treatment_in_progress = treatment_summary[1] or 0 %}
+{% set treatment_done = treatment_summary[3] or 0 %}
+{% set treatment_overdue = treatment_summary[4] or 0 %}
+{% set treatment_avg_progress = treatment_summary[5] or 0 %}
+{% set task_summary = dashboard.tasks.summary %}
+{% set company_count = dashboard.company_count or 0 %}
+{% set process_count = dashboard.process_count or 0 %}
+
+<div class="dashboard-page">
+    <div class="flex items-start justify-between gap-3 mb-4">
+        <div>
+            <h2 class="text-xl font-bold">
+                {% if role == 'expert' %}Мои задачи на оценку
+                {% elif role == 'auditor' %}Сводка системы
+                {% elif role == 'process_owner' %}Мои процессы и риски
+                {% else %}Обзор системы{% endif %}
+            </h2>
+            <p class="text-sm text-gray-500">{{ session.get('username') }} · {{ role | role_label }}</p>
+        </div>
+        <div class="flex gap-2 flex-wrap justify-end">
+            {% if role in ['admin', 'risk_manager', 'process_owner'] %}
+                <a href="{{ url_for('list_process_risks') }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">+ Новый риск</a>
+            {% endif %}
+            {% if role == 'admin' %}
+                <a href="{{ url_for('list_processes') }}" class="inline-block bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm font-semibold">+ Процесс</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Баннер задач (когда есть что делать) ── #}
+    {% set pending_count = (task_summary.workflow or 0) + (task_summary.expert or 0) + (task_summary.treatments or 0) %}
+    {% if pending_count > 0 and role != 'auditor' and not (company_count == 0 or (company_count > 0 and process_count == 0) or (process_count > 0 and total == 0)) %}
+    <div style="background:#eff6ff; border:2px solid #2563eb; border-radius:10px; padding:14px 18px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <div>
+            <span style="font-size:20px;">🔔</span>
+            <strong style="color:#1e40af; font-size:15px; margin-left:6px;">У вас {{ pending_count }} задач{{ 'а' if pending_count == 1 else ('и' if 2 <= pending_count <= 4 else '') }} требующих внимания</strong>
+            <span style="color:#3b82f6; font-size:13px; margin-left:8px;">
+                {% if task_summary.workflow > 0 %}{{ task_summary.workflow }} действий workflow{% endif %}
+                {% if task_summary.expert > 0 %}{% if task_summary.workflow > 0 %} · {% endif %}{{ task_summary.expert }} экспертных оценок{% endif %}
+                {% if task_summary.treatments > 0 %}{% if task_summary.workflow > 0 or task_summary.expert > 0 %} · {% endif %}{{ task_summary.treatments }} планов обработки{% endif %}
+            </span>
+        </div>
+        <a href="{{ url_for('my_tasks') }}" style="background:#2563eb; color:white; padding:8px 20px; border-radius:6px; font-weight:700; text-decoration:none; white-space:nowrap;">Перейти к задачам →</a>
+    </div>
+    {% endif %}
+
+    {# ── Онбординг-визард (когда нет данных) ── #}
+    {% if company_count == 0 or (company_count > 0 and process_count == 0) or (process_count > 0 and total == 0) %}
+        {% if role in ['admin', 'risk_manager', 'process_owner', 'expert'] %}
+        <div class="onboarding-wizard">
+            <div class="text-lg font-bold mb-1">👋 Добро пожаловать в RiskFlow AI</div>
+            <div class="text-sm text-gray-600 mb-1">Выполните три шага, чтобы начать работу с системой</div>
+            <div style="background:#fef3c7; border-left:3px solid #f59e0b; padding:8px 12px; border-radius:4px; font-size:13px; color:#92400e; margin-bottom:4px;">
+                ▶ Текущий шаг выделен синей рамкой — нажмите кнопку <strong>«👉 Начать →»</strong> в нём
+            </div>
+            <div class="wizard-steps">
+                <div class="wizard-step {{ 'done' if company_count > 0 else 'active' }}">
+                    <div class="wizard-step-num">{{ '✓' if company_count > 0 else '1' }}</div>
+                    <div class="wizard-step-title">Создать организацию</div>
+                    <div class="wizard-step-desc">Добавьте организацию, для которой проводится оценка рисков</div>
+                    {% if company_count == 0 %}
+                        <a href="{{ url_for('add_company') }}" class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white text-base px-6 py-2 rounded-lg font-bold shadow">👉 Начать →</a>
+                    {% else %}
+                        <div class="mt-3 text-sm text-green-700 font-semibold">Готово</div>
+                    {% endif %}
+                </div>
+                <div class="wizard-step {{ 'done' if process_count > 0 else ('active' if company_count > 0 else '') }}">
+                    <div class="wizard-step-num">{{ '✓' if process_count > 0 else '2' }}</div>
+                    <div class="wizard-step-title">Добавить процесс</div>
+                    <div class="wizard-step-desc">Опишите бизнес-процессы, которые будут анализироваться</div>
+                    {% if process_count == 0 and company_count > 0 %}
+                        <a href="{{ url_for('add_process') }}" class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white text-base px-6 py-2 rounded-lg font-bold shadow">👉 Начать →</a>
+                    {% elif process_count > 0 %}
+                        <div class="mt-3 text-sm text-green-700 font-semibold">Готово</div>
+                    {% else %}
+                        <div class="mt-3 text-sm text-gray-400">Ожидает шага 1</div>
+                    {% endif %}
+                </div>
+                <div class="wizard-step {{ 'done' if total > 0 else ('active' if process_count > 0 else '') }}">
+                    <div class="wizard-step-num">{{ '✓' if total > 0 else '3' }}</div>
+                    <div class="wizard-step-title">Оценить первый риск</div>
+                    <div class="wizard-step-desc">Зарегистрируйте риск процесса и запустите жизненный цикл</div>
+                    {% if total == 0 and process_count > 0 %}
+                        <a href="{{ url_for('add_process_risk') }}" class="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white text-base px-6 py-2 rounded-lg font-bold shadow">👉 Начать →</a>
+                    {% elif total > 0 %}
+                        <div class="mt-3 text-sm text-green-700 font-semibold">Готово</div>
+                    {% else %}
+                        <div class="mt-3 text-sm text-gray-400">Ожидает шага 2</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    {# ── KPI-карточки ── #}
+    {% if role in ['admin', 'risk_manager'] %}
+    <div class="dashboard-kpis">
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ total }}</div><div class="dashboard-kpi-label">Всего рисков</div></div>
+        <div class="dashboard-kpi dashboard-kpi-alert"><div class="dashboard-kpi-value">{{ high }}</div><div class="dashboard-kpi-label">Высокие</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ medium }}</div><div class="dashboard-kpi-label">Средние</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ low }}</div><div class="dashboard-kpi-label">Низкие</div></div>
+        <div class="dashboard-kpi {{ 'dashboard-kpi-alert' if overdue > 0 }}"><div class="dashboard-kpi-value">{{ overdue }}</div><div class="dashboard-kpi-label">Просрочено</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ closed }}</div><div class="dashboard-kpi-label">Закрыто</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ treatment_total }}</div><div class="dashboard-kpi-label">Планов обработки</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ treatment_avg_progress | round(0) }}%</div><div class="dashboard-kpi-label">Прогресс планов</div></div>
+    </div>
+    {% elif role == 'process_owner' %}
+    <div class="dashboard-kpis">
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ total }}</div><div class="dashboard-kpi-label">Рисков процессов</div></div>
+        <div class="dashboard-kpi dashboard-kpi-alert"><div class="dashboard-kpi-value">{{ high }}</div><div class="dashboard-kpi-label">Высокие</div></div>
+        <div class="dashboard-kpi {{ 'dashboard-kpi-alert' if overdue > 0 }}"><div class="dashboard-kpi-value">{{ overdue }}</div><div class="dashboard-kpi-label">Просрочено</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ task_summary.workflow + task_summary.treatments }}</div><div class="dashboard-kpi-label">Мои задачи</div></div>
+    </div>
+    {% elif role == 'expert' %}
+    <div class="dashboard-kpis">
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ task_summary.expert }}</div><div class="dashboard-kpi-label">Задачи на оценку</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ task_summary.workflow }}</div><div class="dashboard-kpi-label">Задачи workflow</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ total }}</div><div class="dashboard-kpi-label">Рисков всего</div></div>
+    </div>
+    {% elif role == 'auditor' %}
+    <div class="dashboard-kpis">
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ total }}</div><div class="dashboard-kpi-label">Всего рисков</div></div>
+        <div class="dashboard-kpi dashboard-kpi-alert"><div class="dashboard-kpi-value">{{ high }}</div><div class="dashboard-kpi-label">Высокие</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ closed }}</div><div class="dashboard-kpi-label">Закрыто</div></div>
+        <div class="dashboard-kpi"><div class="dashboard-kpi-value">{{ treatment_total }}</div><div class="dashboard-kpi-label">Планов обработки</div></div>
+    </div>
+    {% endif %}
+
+    {# ── Мои задачи (для всех ролей кроме auditor) ── #}
+    {% if role != 'auditor' and (task_summary.workflow + task_summary.expert + task_summary.treatments) > 0 %}
+    <div class="dashboard-panel mb-4">
+        <div class="dashboard-panel-header">Мои ближайшие задачи</div>
+        <div class="dashboard-panel-body">
+            <table class="dashboard-table">
+                <thead><tr><th>Тип</th><th>Кол-во</th><th></th></tr></thead>
+                <tbody>
+                    {% if task_summary.workflow > 0 %}
+                    <tr><td>Действия workflow</td><td><span class="font-bold text-blue-700">{{ task_summary.workflow }}</span></td><td><a href="{{ url_for('my_tasks') }}" class="text-blue-600 hover:underline text-sm">Перейти →</a></td></tr>
+                    {% endif %}
+                    {% if task_summary.expert > 0 %}
+                    <tr><td>Экспертная оценка</td><td><span class="font-bold text-blue-700">{{ task_summary.expert }}</span></td><td><a href="{{ url_for('my_tasks') }}" class="text-blue-600 hover:underline text-sm">Перейти →</a></td></tr>
+                    {% endif %}
+                    {% if task_summary.treatments > 0 %}
+                    <tr><td>Планы обработки</td><td><span class="font-bold text-blue-700">{{ task_summary.treatments }}</span></td><td><a href="{{ url_for('my_tasks') }}" class="text-blue-600 hover:underline text-sm">Перейти →</a></td></tr>
+                    {% endif %}
+                    {% if task_summary.overdue_treatments > 0 %}
+                    <tr><td class="text-red-600">Просроченные действия</td><td><span class="font-bold text-red-600">{{ task_summary.overdue_treatments }}</span></td><td><a href="{{ url_for('my_tasks') }}" class="text-red-600 hover:underline text-sm">Просмотреть →</a></td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── Основные панели (для admin / risk_manager) ── #}
+    {% if role in ['admin', 'risk_manager'] %}
+    <div class="dashboard-grid">
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-header">Риски по статусам</div>
+            <div class="dashboard-panel-body">
+                <table class="dashboard-table">
+                    <thead><tr><th>Статус</th><th>Кол-во</th><th>Доля</th></tr></thead>
+                    <tbody>
+                        {% for status in dashboard.status_counts %}
+                            {% set percent = ((status[1] / total) * 100) if total else 0 %}
+                            <tr>
+                                <td>
+                                    {% set s = status[0] %}
+                                    <span class="status-badge {{ 'status-draft' if s == 'Draft' else 'status-inreview' if s == 'In Review' else 'status-approved' if s == 'Approved' else 'status-inprogress' if s == 'In Progress' else 'status-closed' if s == 'Closed' else 'status-returned' if s == 'Returned' else '' }}">{{ s }}</span>
+                                </td>
+                                <td>{{ status[1] }}</td>
+                                <td><div class="dashboard-bar"><div class="dashboard-bar-fill" style="width: {{ percent }}%"></div></div></td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="3" class="text-gray-400 text-sm">Нет данных</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-header">Критичные риски (топ 10)</div>
+            <div class="dashboard-panel-body">
+                <table class="dashboard-table">
+                    <thead><tr><th>Риск</th><th>Процесс</th><th>Уровень</th><th>Оценка</th></tr></thead>
+                    <tbody>
+                        {% for risk in dashboard.top_risks %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('edit_process_risk', id=risk[0]) }}" class="text-blue-600 hover:underline">
+                                        {{ (risk[3] or risk[2] or 'Риск #' ~ risk[0]) | truncate(40) }}
+                                    </a>
+                                </td>
+                                <td class="text-gray-500 text-sm">{{ risk[1] }}</td>
+                                <td>
+                                    <span class="risk-badge {{ 'risk-badge-low' if risk[4] == 'Низкий' else 'risk-badge-medium' if risk[4] == 'Средний' else 'risk-badge-high' }}">{{ risk[4] or '-' }}</span>
+                                </td>
+                                <td>{{ risk[5] | risk_number }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="text-gray-400 text-sm">Нет данных</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-header">Процессы по уровню риска</div>
+            <div class="dashboard-panel-body">
+                <table class="dashboard-table">
+                    <thead><tr><th>Процесс</th><th>Рисков</th><th>Критичных</th><th>Max оценка</th></tr></thead>
+                    <tbody>
+                        {% for process in dashboard.process_ranking %}
+                            <tr>
+                                <td><a href="{{ url_for('process_detail', id=process[0]) }}" class="text-blue-600 hover:underline">{{ process[1] }}</a></td>
+                                <td>{{ process[2] }}</td>
+                                <td>{{ process[4] or 0 }}</td>
+                                <td>{{ process[3] | risk_number }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="text-gray-400 text-sm">Нет данных</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-header">Ближайшие планы обработки</div>
+            <div class="dashboard-panel-body">
+                <table class="dashboard-table">
+                    <thead><tr><th>Действие</th><th>Ответственный</th><th>Срок</th><th>Прогресс</th></tr></thead>
+                    <tbody>
+                        {% for item in dashboard.upcoming_treatments %}
+                            <tr>
+                                <td><a href="{{ url_for('edit_risk_treatment', id=item[0]) }}" class="text-blue-600 hover:underline">{{ item[1] | truncate(35) }}</a></td>
+                                <td class="text-gray-500 text-sm">{{ item[4] or '-' }}</td>
+                                <td class="text-sm">{{ item[5] or '-' }}</td>
+                                <td>
+                                    <div class="text-xs font-semibold">{{ item[6] or 0 }}%</div>
+                                    <div class="dashboard-bar"><div class="dashboard-bar-fill" style="width: {{ item[6] or 0 }}%"></div></div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="text-gray-400 text-sm">Нет активных планов</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    {# ── process_owner view ── #}
+    {% elif role == 'process_owner' %}
+    <div class="dashboard-grid">
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-header">Мои процессы</div>
+            <div class="dashboard-panel-body">
+                <table class="dashboard-table">
+                    <thead><tr><th>Процесс</th><th>Рисков</th><th>Max оценка</th></tr></thead>
+                    <tbody>
+                        {% for process in dashboard.process_ranking %}
+                            <tr>
+                                <td><a href="{{ url_for('process_detail', id=process[0]) }}" class="text-blue-600 hover:underline">{{ process[1] }}</a></td>
+                                <td>{{ process[2] }}</td>
+                                <td>{{ process[3] | risk_number }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="3" class="text-gray-400 text-sm">Нет данных</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-header">Риски требующие действий</div>
+            <div class="dashboard-panel-body">
+                <table class="dashboard-table">
+                    <thead><tr><th>Риск</th><th>Статус</th><th>Срок</th></tr></thead>
+                    <tbody>
+                        {% for risk in dashboard.top_risks %}
+                            {% if risk[6] not in ['Closed'] %}
+                            <tr>
+                                <td><a href="{{ url_for('edit_process_risk', id=risk[0]) }}" class="text-blue-600 hover:underline">{{ (risk[3] or risk[2] or 'Риск #' ~ risk[0]) | truncate(40) }}</a></td>
+                                <td>
+                                    {% set s = risk[6] %}
+                                    <span class="status-badge {{ 'status-draft' if s == 'Draft' else 'status-inreview' if s == 'In Review' else 'status-approved' if s == 'Approved' else 'status-inprogress' if s == 'In Progress' else 'status-returned' if s == 'Returned' else '' }}">{{ s }}</span>
+                                </td>
+                                <td class="text-sm text-gray-500">{{ risk[8] or '-' }}</td>
+                            </tr>
+                            {% endif %}
+                        {% else %}
+                            <tr><td colspan="3" class="text-gray-400 text-sm">Нет данных</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    {# ── auditor view ── #}
+    {% elif role == 'auditor' %}
+    <div class="dashboard-grid">
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-header">Риски по статусам</div>
+            <div class="dashboard-panel-body">
+                <table class="dashboard-table">
+                    <thead><tr><th>Статус</th><th>Кол-во</th></tr></thead>
+                    <tbody>
+                        {% for status in dashboard.status_counts %}
+                            <tr><td>{{ status[0] }}</td><td>{{ status[1] }}</td></tr>
+                        {% else %}
+                            <tr><td colspan="2" class="text-gray-400 text-sm">Нет данных</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="dashboard-panel">
+            <div class="dashboard-panel-header">Планы обработки по статусам</div>
+            <div class="dashboard-panel-body">
+                <table class="dashboard-table">
+                    <thead><tr><th>Статус</th><th>Кол-во</th><th>Прогресс</th></tr></thead>
+                    <tbody>
+                        {% for status in dashboard.treatment_status_counts %}
+                            <tr>
+                                <td>{{ status[0] }}</td>
+                                <td>{{ status[1] }}</td>
+                                <td>
+                                    <div class="text-sm font-semibold">{{ status[2] | round(0) }}%</div>
+                                    <div class="dashboard-bar"><div class="dashboard-bar-fill" style="width: {{ status[2] }}%"></div></div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="3" class="text-gray-400 text-sm">Нет данных</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    {# ── expert view ── #}
+    {% elif role == 'expert' %}
+    <div class="dashboard-panel">
+        <div class="dashboard-panel-header">Задачи на экспертную оценку</div>
+        <div class="dashboard-panel-body">
+            {% if task_summary.expert == 0 and task_summary.workflow == 0 %}
+                <p class="text-gray-500 text-sm">Новых задач нет. <a href="{{ url_for('list_process_risks') }}" class="text-blue-600 hover:underline">Посмотреть реестр рисков →</a></p>
+            {% else %}
+                <p class="text-gray-700 mb-3">У вас <strong>{{ task_summary.expert }}</strong> задач на оценку и <strong>{{ task_summary.workflow }}</strong> действий workflow.</p>
+                <a href="{{ url_for('my_tasks') }}" class="inline-block bg-blue-600 text-white px-5 py-2 rounded font-semibold hover:bg-blue-700">Открыть мои задачи</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

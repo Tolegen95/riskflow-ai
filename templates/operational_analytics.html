@@ -1,0 +1,181 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .ops-section { background:white; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:16px; }
+    .ops-header { padding:12px 14px; border-bottom:1px solid #e2e8f0; }
+    .ops-body { padding:14px; }
+    .ops-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:16px; }
+    .ops-kpi { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; }
+    .ops-kpi-value { font-size:24px; font-weight:800; color:#0f172a; }
+    .ops-kpi-label { color:#64748b; font-size:12px; font-weight:700; text-transform:uppercase; }
+    .ops-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:start; }
+    .ops-scroll { max-width:100%; overflow-x:auto; }
+    .ops-table { width:100%; min-width:760px; border-collapse:collapse; font-size:14px; }
+    .ops-table th, .ops-table td { border:1px solid #e2e8f0; padding:8px 10px; text-align:left; vertical-align:top; }
+    .ops-table th { background:#f8fafc; color:#334155; white-space:nowrap; }
+    .ops-bar { background:#e2e8f0; border-radius:999px; height:9px; overflow:hidden; min-width:90px; }
+    .ops-bar-fill { background:#2563eb; height:100%; }
+    .ops-danger { color:#b91c1c; font-weight:700; }
+    @media (max-width: 1100px) { .ops-grid { grid-template-columns:1fr; } }
+</style>
+
+{% set risk = analytics.risk_kpis %}
+{% set treatment = analytics.treatment_kpis %}
+
+<div class="ops-section">
+    <div class="ops-header">
+        <h2 class="text-xl font-semibold">Операционная аналитика</h2>
+        <p class="text-sm text-gray-600">KPI по рискам, workflow, просрочкам и эффективности мер обработки.</p>
+    </div>
+    <div class="ops-body">
+        <div class="ops-kpis">
+            <div class="ops-kpi"><div class="ops-kpi-value">{{ risk[0] or 0 }}</div><div class="ops-kpi-label">Рисков в зоне доступа</div></div>
+            <div class="ops-kpi"><div class="ops-kpi-value">{{ risk[1] or 0 }}</div><div class="ops-kpi-label">Высоких рисков</div></div>
+            <div class="ops-kpi"><div class="ops-kpi-value">{{ risk[2] or 0 }}</div><div class="ops-kpi-label">Просроченных рисков</div></div>
+            <div class="ops-kpi"><div class="ops-kpi-value">{{ risk[3] or 0 }}</div><div class="ops-kpi-label">Не пересмотрены 30+ дней</div></div>
+            <div class="ops-kpi"><div class="ops-kpi-value">{{ risk[4] | risk_number }}</div><div class="ops-kpi-label">Avg residual</div></div>
+            <div class="ops-kpi"><div class="ops-kpi-value">{{ treatment[0] or 0 }}</div><div class="ops-kpi-label">Мер обработки</div></div>
+            <div class="ops-kpi"><div class="ops-kpi-value">{{ treatment[1] or 0 }}</div><div class="ops-kpi-label">Просроченных мер</div></div>
+            <div class="ops-kpi"><div class="ops-kpi-value">{{ treatment[2] | round(0) }}%</div><div class="ops-kpi-label">Средний прогресс</div></div>
+            <div class="ops-kpi"><div class="ops-kpi-value">{{ analytics.avg_approval_days | risk_number if analytics.avg_approval_days else 'n/a' }}</div><div class="ops-kpi-label">Avg approval days</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="ops-grid">
+    <div class="ops-section">
+        <div class="ops-header"><h3 class="font-semibold">Зависание рисков по статусам</h3></div>
+        <div class="ops-body ops-scroll">
+            <table class="ops-table">
+                <thead><tr><th>Статус</th><th>Кол-во</th><th>Средний возраст, дней</th><th>Max, дней</th></tr></thead>
+                <tbody>
+                    {% for item in analytics.risk_status_aging %}
+                        <tr>
+                            <td>{{ item[0] }}</td>
+                            <td>{{ item[1] }}</td>
+                            <td>{{ item[2] | round(1) }}</td>
+                            <td>{{ item[3] | round(1) if item[3] is not none else 0 }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-gray-500">Нет рисков.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ops-section">
+        <div class="ops-header"><h3 class="font-semibold">Статусы мер обработки</h3></div>
+        <div class="ops-body ops-scroll">
+            <table class="ops-table">
+                <thead><tr><th>Статус</th><th>Кол-во</th><th>Средний прогресс</th></tr></thead>
+                <tbody>
+                    {% for item in analytics.treatment_statuses %}
+                        <tr>
+                            <td>{{ item[0] }}</td>
+                            <td>{{ item[1] }}</td>
+                            <td>
+                                <div class="font-semibold">{{ item[2] | round(0) }}%</div>
+                                <div class="ops-bar"><div class="ops-bar-fill" style="width: {{ item[2] or 0 }}%"></div></div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="text-gray-500">Нет мер.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="ops-section">
+    <div class="ops-header"><h3 class="font-semibold">Heatmap процессов по рискам</h3></div>
+    <div class="ops-body ops-scroll">
+        <table class="ops-table">
+            <thead><tr><th>Процесс</th><th>Рисков</th><th>Высоких</th><th>Avg residual</th><th>Max residual</th></tr></thead>
+            <tbody>
+                {% for item in analytics.process_risk_heatmap %}
+                    <tr>
+                        <td><a href="{{ url_for('process_detail', id=item[0]) }}" class="text-blue-600">{{ item[1] }}</a></td>
+                        <td>{{ item[2] }}</td>
+                        <td>{{ item[3] or 0 }}</td>
+                        <td>{{ item[4] | risk_number }}</td>
+                        <td>{{ item[5] | risk_number }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="text-gray-500">Нет данных.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="ops-grid">
+    <div class="ops-section">
+        <div class="ops-header"><h3 class="font-semibold">Просроченные риски</h3></div>
+        <div class="ops-body ops-scroll">
+            <table class="ops-table">
+                <thead><tr><th>Процесс</th><th>Риск</th><th>Статус</th><th>Due</th><th>Дней</th></tr></thead>
+                <tbody>
+                    {% for item in analytics.overdue_risks %}
+                        <tr>
+                            <td>{{ item[1] }}{% if item[2] %}<br><span class="text-gray-500">{{ item[2] }}</span>{% endif %}</td>
+                            <td><a href="{{ url_for('edit_process_risk', id=item[0]) }}" class="text-blue-600">{{ item[3] or 'Риск' }}</a></td>
+                            <td>{{ item[4] }}</td>
+                            <td>{{ item[7] }}</td>
+                            <td class="ops-danger">{{ item[8] }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="text-gray-500">Просроченных рисков нет.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ops-section">
+        <div class="ops-header"><h3 class="font-semibold">Просроченные меры</h3></div>
+        <div class="ops-body ops-scroll">
+            <table class="ops-table">
+                <thead><tr><th>Мера</th><th>Процесс</th><th>Owner</th><th>Due</th><th>Дней</th></tr></thead>
+                <tbody>
+                    {% for item in analytics.overdue_treatments %}
+                        <tr>
+                            <td><a href="{{ url_for('edit_risk_treatment', id=item[0]) }}" class="text-blue-600">{{ item[1] }}</a></td>
+                            <td>{{ item[2] }}</td>
+                            <td>{{ item[4] or '-' }}</td>
+                            <td>{{ item[5] }}</td>
+                            <td class="ops-danger">{{ item[9] }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="text-gray-500">Просроченных мер нет.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="ops-section">
+    <div class="ops-header"><h3 class="font-semibold">Эффективность мер: expected vs actual residual</h3></div>
+    <div class="ops-body ops-scroll">
+        <table class="ops-table">
+            <thead><tr><th>Мера</th><th>Процесс</th><th>Expected</th><th>Actual</th><th>Delta</th><th>Статус</th></tr></thead>
+            <tbody>
+                {% for item in analytics.treatment_effectiveness %}
+                    <tr>
+                        <td><a href="{{ url_for('edit_risk_treatment', id=item[0]) }}" class="text-blue-600">{{ item[1] }}</a></td>
+                        <td>{{ item[2] }}</td>
+                        <td>{{ item[3] | risk_number }}</td>
+                        <td>{{ item[4] | risk_number }}</td>
+                        <td class="{{ 'ops-danger' if item[5] < 0 else '' }}">{{ item[5] | risk_number }}</td>
+                        <td>{{ item[6] }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="6" class="text-gray-500">Actual residual пока не заполнен по активным мерам.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

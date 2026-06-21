@@ -1,0 +1,10 @@
+{% extends "index.html" %}
+{% block content %}
+<h2 class="text-xl font-semibold mb-4">{{ 'Редактировать организацию / уровень внедрения' if company else 'Добавить организацию / уровень внедрения' }}</h2>
+<form method="POST" class="space-y-4">
+    <div><label class="block">Название</label><input name="name" class="border p-2 w-full" value="{{ company[1] if company else '' }}" required></div>
+    <div><label class="block">Тип / уровень</label><input name="industry" class="border p-2 w-full" value="{{ company[3] if company else '' }}" placeholder="Например: национальный CSIRT, вуз, промышленная компания"></div>
+    <div><label class="block">Описание контекста</label><textarea name="description" class="border p-2 w-full">{{ company[2] if company else '' }}</textarea></div>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded" type="submit">Сохранить</button>
+</form>
+{% endblock %}

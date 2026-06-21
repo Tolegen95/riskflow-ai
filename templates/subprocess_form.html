@@ -1,0 +1,177 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .subprocess-page { max-width: 900px; }
+    .subprocess-header {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #2563eb;
+        border-radius: 8px;
+        margin-bottom: 14px;
+        padding: 16px;
+    }
+    .subprocess-title {
+        color: #0f172a;
+        font-size: 22px;
+        font-weight: 800;
+    }
+    .subprocess-note {
+        color: #475569;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+    .subprocess-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 14px;
+    }
+    .subprocess-card-header {
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+        font-weight: 800;
+        padding: 12px 14px;
+    }
+    .subprocess-card-body {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        padding: 14px;
+    }
+    .subprocess-field label {
+        color: #334155;
+        display: block;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+    .subprocess-field input,
+    .subprocess-field select,
+    .subprocess-field textarea {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 8px;
+        width: 100%;
+    }
+    .subprocess-field textarea {
+        min-height: 90px;
+    }
+    .subprocess-wide { grid-column: 1 / -1; }
+    .subprocess-help {
+        color: #64748b;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    .subprocess-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 14px;
+    }
+    .subprocess-btn {
+        border-radius: 4px;
+        color: #ffffff;
+        display: inline-block;
+        font-weight: 700;
+        padding: 8px 12px;
+        text-decoration: none;
+    }
+    .subprocess-btn.primary { background: #2563eb; }
+    .subprocess-btn.secondary { background: #475569; }
+</style>
+
+{% set current_process_id = subprocess[1] if subprocess else selected_process_id %}
+
+<div class="subprocess-page">
+    <section class="subprocess-header">
+        <div class="subprocess-title">{{ 'Редактировать шаг процесса реагирования' if subprocess else 'Добавить шаг процесса реагирования' }}</div>
+        <div class="subprocess-note">
+            Опишите один понятный шаг CSIRT/IR-процесса: что поступает на вход, что должно получиться на выходе,
+            кто отвечает и какие системы используются.
+        </div>
+    </section>
+
+    <form method="POST">
+        <section class="subprocess-card">
+            <div class="subprocess-card-header">Место шага в процессе</div>
+            <div class="subprocess-card-body">
+                <div class="subprocess-field subprocess-wide">
+                    <label>Процесс CSIRT</label>
+                    <select name="process_id" required>
+                        {% for process in processes %}
+                            <option value="{{ process[0] }}" {% if (subprocess and process[0] == subprocess[1]) or (selected_process_id and process[0] == selected_process_id) %}selected{% endif %}>{{ process[1] }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="subprocess-help">Меняйте процесс только если этот шаг действительно относится к другой карте реагирования.</div>
+                </div>
+                <div class="subprocess-field">
+                    <label>Порядок шага</label>
+                    <input type="number" min="1" name="order_index" value="{{ subprocess[8] if subprocess else '' }}" placeholder="Например: 1">
+                </div>
+                <div class="subprocess-field">
+                    <label>Название шага</label>
+                    <input name="name" value="{{ subprocess[2] if subprocess else '' }}" required placeholder="Например: Регистрация инцидента">
+                </div>
+                <div class="subprocess-field subprocess-wide">
+                    <label>Назначение шага</label>
+                    <textarea name="description" placeholder="Кратко: какую задачу решает этот шаг в процессе реагирования">{{ subprocess[3] if subprocess else '' }}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section class="subprocess-card">
+            <div class="subprocess-card-header">Входы, выходы и ответственность</div>
+            <div class="subprocess-card-body">
+                <div class="subprocess-field">
+                    <label>Входные данные</label>
+                    <textarea name="input_data" placeholder="Событие SIEM, обращение пользователя, уведомление CERT">{{ subprocess[4] if subprocess else '' }}</textarea>
+                </div>
+                <div class="subprocess-field">
+                    <label>Результат шага</label>
+                    <textarea name="output_data" placeholder="Заявка, классификация инцидента, решение об эскалации">{{ subprocess[5] if subprocess else '' }}</textarea>
+                </div>
+                <div class="subprocess-field">
+                    <label>Ответственная роль</label>
+                    {% set responsible_value = subprocess[6] if subprocess else '' %}
+                    {% set csirt_roles = [
+                        'SOC Analyst',
+                        'Incident Manager',
+                        'CSIRT Lead',
+                        'Forensic Analyst',
+                        'Threat Intelligence Analyst',
+                        'System Administrator',
+                        'Legal / Compliance',
+                        'PR / Communications',
+                        'Руководитель организации'
+                    ] %}
+                    <select name="responsible_person">
+                        <option value="">Не назначена</option>
+                        {% for role in csirt_roles %}
+                            <option value="{{ role }}" {% if responsible_value == role %}selected{% endif %}>{{ role }}</option>
+                        {% endfor %}
+                        {% if responsible_value and responsible_value not in csirt_roles %}
+                            <option value="{{ responsible_value }}" selected>{{ responsible_value }}</option>
+                        {% endif %}
+                    </select>
+                    <div class="subprocess-help">Роль нужна для матрицы ответственности и защиты методики.</div>
+                </div>
+                <div class="subprocess-field">
+                    <label>Используемые системы</label>
+                    <textarea name="used_systems" placeholder="SIEM, SOAR, EDR, Service Desk, Email Gateway">{{ subprocess[7] if subprocess else '' }}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section class="subprocess-card">
+            <div class="subprocess-actions">
+                <button class="subprocess-btn primary" type="submit">Сохранить шаг</button>
+                {% if current_process_id %}
+                    <a href="{{ url_for('process_detail', id=current_process_id) }}" class="subprocess-btn secondary">Назад к процессу</a>
+                {% else %}
+                    <a href="{{ url_for('list_processes') }}" class="subprocess-btn secondary">Назад к процессам</a>
+                {% endif %}
+            </div>
+        </section>
+    </form>
+</div>
+{% endblock %}

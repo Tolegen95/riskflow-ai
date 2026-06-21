@@ -1,0 +1,171 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .method-page { max-width: 1200px; }
+    .method-hero {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #2563eb;
+        border-radius: 8px;
+        padding: 18px;
+        margin-bottom: 16px;
+    }
+    .method-title { color: #0f172a; font-size: 24px; font-weight: 800; line-height: 1.2; }
+    .method-subtitle { color: #475569; margin-top: 8px; max-width: 900px; }
+    .method-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .method-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 14px;
+    }
+    .method-card h3 {
+        color: #0f172a;
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+    .method-card p,
+    .method-card li {
+        color: #475569;
+        font-size: 14px;
+    }
+    .method-card ul {
+        list-style: disc;
+        padding-left: 18px;
+    }
+    .method-step {
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+    }
+    .method-step-number {
+        align-items: center;
+        background: #dbeafe;
+        border-radius: 999px;
+        color: #1d4ed8;
+        display: flex;
+        font-weight: 800;
+        height: 36px;
+        justify-content: center;
+        width: 36px;
+    }
+    .method-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .method-action {
+        background: #2563eb;
+        border-radius: 4px;
+        color: #ffffff;
+        display: inline-block;
+        font-weight: 700;
+        padding: 8px 12px;
+        text-decoration: none;
+    }
+    .method-action.secondary { background: #475569; }
+</style>
+
+<div class="method-page">
+    <section class="method-hero">
+        <div class="method-title">Методика построения процессов службы реагирования на инциденты ИБ</div>
+        <div class="method-subtitle">
+            Экран показывает логику диссертационной модели: от выбора типа организации до карты процессов,
+            оценки пробелов, распределения ответственности, плана улучшений и нормативных рекомендаций.
+        </div>
+    </section>
+
+    <div class="method-grid">
+        <section class="method-card">
+            <h3>Цель исследования</h3>
+            <p>
+                Разработать методику и модель построения процессов службы реагирования на компьютерные инциденты
+                информационной безопасности.
+            </p>
+        </section>
+        <section class="method-card">
+            <h3>Объект исследования</h3>
+            <p>Процессы службы реагирования на инциденты информационной безопасности.</p>
+        </section>
+        <section class="method-card">
+            <h3>Уровни применения</h3>
+            <ul>
+                <li>Национальный уровень</li>
+                <li>Образовательные организации</li>
+                <li>Промышленные компании</li>
+            </ul>
+        </section>
+    </div>
+
+    <div class="method-grid">
+        <section class="method-card method-step">
+            <div class="method-step-number">1</div>
+            <div>
+                <h3>Выбрать тип организации</h3>
+                <p>Определяется контекст применения модели: национальный CSIRT, вуз или промышленная компания.</p>
+                <div class="method-actions"><a class="method-action" href="{{ url_for('list_companies') }}">Открыть организации</a></div>
+            </div>
+        </section>
+        <section class="method-card method-step">
+            <div class="method-step-number">2</div>
+            <div>
+                <h3>Построить карту процессов</h3>
+                <p>Фиксируются процессы реагирования: выявление, регистрация, triage, сдерживание, восстановление и разбор.</p>
+                <div class="method-actions"><a class="method-action" href="{{ url_for('list_processes') }}">Открыть процессы</a></div>
+            </div>
+        </section>
+        <section class="method-card method-step">
+            <div class="method-step-number">3</div>
+            <div>
+                <h3>Выявить пробелы</h3>
+                <p>Для каждого процесса описываются слабые места, их вероятность, влияние и эффективность текущих контролей.</p>
+                <div class="method-actions"><a class="method-action" href="{{ url_for('list_process_risks') }}">Открыть пробелы</a></div>
+            </div>
+        </section>
+        <section class="method-card method-step">
+            <div class="method-step-number">4</div>
+            <div>
+                <h3>Провести экспертную оценку</h3>
+                <p>Эксперты уточняют оценки пробелов, а система агрегирует их в итоговую оценку процесса.</p>
+                <div class="method-actions"><a class="method-action" href="{{ url_for('list_process_risks') }}">Открыть реестр рисков</a></div>
+            </div>
+        </section>
+        <section class="method-card method-step">
+            <div class="method-step-number">5</div>
+            <div>
+                <h3>Сформировать рекомендации</h3>
+                <p>Пробелы превращаются в план улучшений с ответственными, сроками, статусами и доказательствами выполнения.</p>
+                <div class="method-actions"><a class="method-action" href="{{ url_for('list_risk_treatments') }}">Открыть план</a></div>
+            </div>
+        </section>
+        <section class="method-card method-step">
+            <div class="method-step-number">6</div>
+            <div>
+                <h3>Проверить нормативное соответствие</h3>
+                <p>Рекомендации связываются с требованиями ISO/IEC 27001, IEC 62443, NIST CSF и другими ориентирами.</p>
+                <div class="method-actions"><a class="method-action" href="{{ url_for('compliance_dashboard') }}">Открыть требования</a></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- <section class="method-card">
+        <h3>Результат применения методики</h3>
+        <p>
+            После прохождения 6 шагов формируется описанная карта CSIRT-процессов, перечень выявленных пробелов,
+            распределение ответственности, план рекомендаций и связь с нормативными требованиями.
+        </p>
+        <div class="method-actions">
+            <a class="method-action" href="{{ url_for('dashboard') }}">Открыть обзор модели</a>
+            <a class="method-action secondary" href="{{ url_for('operational_analytics') }}">Расширенная аналитика</a>
+        </div>
+    </section> -->
+</div>
+{% endblock %}

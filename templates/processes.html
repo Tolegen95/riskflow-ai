@@ -1,0 +1,30 @@
+{% extends "index.html" %}
+{% block content %}
+<h2 class="text-xl font-semibold mb-4">Процессы</h2>
+{% if session.get('role') == 'admin' %}
+<a href="{{ url_for('add_process') }}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">Добавить процесс</a>
+{% endif %}
+<table class="table-auto w-full">
+    <thead><tr><th class="px-4 py-2">Процесс</th><th class="px-4 py-2">Компания</th><th class="px-4 py-2">Тип</th><th class="px-4 py-2">Владелец</th><th class="px-4 py-2">Подпроцессы</th><th class="px-4 py-2">Действия</th></tr></thead>
+    <tbody>
+    {% for process in processes %}
+        <tr>
+            <td class="border px-4 py-2"><a href="{{ url_for('process_detail', id=process[0]) }}" class="text-blue-500 hover:underline">{{ process[1] }}</a></td>
+            <td class="border px-4 py-2">{{ process[2] }}</td>
+            <td class="border px-4 py-2">{{ process[3] or '' }}</td>
+            <td class="border px-4 py-2">{{ process[4] or '' }}</td>
+            <td class="border px-4 py-2">{{ process[5] }}</td>
+            <td class="border px-4 py-2">
+                <a href="{{ url_for('process_detail', id=process[0]) }}" class="text-blue-500 hover:underline">Открыть</a>
+                {% if session.get('role') == 'admin' %}
+                | <a href="{{ url_for('edit_process', id=process[0]) }}" class="text-blue-500 hover:underline">Редактировать</a>
+                <form action="{{ url_for('delete_process', id=process[0]) }}" method="POST" style="display:inline;" onsubmit="return confirm('Удалить процесс?');">
+                    <button class="text-red-500 hover:underline" type="submit">Удалить</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

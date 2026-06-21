@@ -1,0 +1,26 @@
+{% extends "index.html" %}
+{% block content %}
+<h2 class="text-xl font-semibold mb-4">Организации и уровни внедрения</h2>
+<p class="text-sm text-gray-600 mb-4">Контексты применения модели: национальный CSIRT, образовательная организация, промышленная компания.</p>
+<a href="{{ url_for('add_company') }}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">Добавить организацию</a>
+<table class="table-auto w-full">
+    <thead><tr><th class="px-4 py-2">Название</th><th class="px-4 py-2">Тип / уровень</th><th class="px-4 py-2">Описание</th><th class="px-4 py-2">Процессы</th><th class="px-4 py-2">Действия</th></tr></thead>
+    <tbody>
+    {% for company in companies %}
+        <tr>
+            <td class="border px-4 py-2">{{ company[1] }}</td>
+            <td class="border px-4 py-2">{{ company[2] or '' }}</td>
+            <td class="border px-4 py-2">{{ company[3] or '' }}</td>
+            <td class="border px-4 py-2">{{ company[4] }}</td>
+            <td class="border px-4 py-2">
+                <a href="{{ url_for('edit_company', id=company[0]) }}" class="text-blue-500 hover:underline">Редактировать</a>
+                <a href="{{ url_for('export_company_report_zip', company_id=company[0]) }}" class="text-green-600 hover:underline block">Скачать отчет ZIP</a>
+                <form action="{{ url_for('delete_company', id=company[0]) }}" method="POST" style="display:inline;" onsubmit="return confirm('Удалить организацию?');">
+                    <button class="text-red-500 hover:underline" type="submit">Удалить</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

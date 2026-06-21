@@ -1,0 +1,110 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .comp-section { background:white; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:16px; }
+    .comp-header { padding:12px 14px; border-bottom:1px solid #e2e8f0; }
+    .comp-body { padding:14px; }
+    .comp-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:16px; }
+    .comp-kpi { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; }
+    .comp-kpi-value { font-size:24px; font-weight:800; color:#0f172a; }
+    .comp-kpi-label { color:#64748b; font-size:12px; font-weight:700; text-transform:uppercase; }
+    .comp-scroll { max-width:100%; overflow-x:auto; }
+    .comp-table { width:100%; min-width:980px; border-collapse:collapse; font-size:14px; }
+    .comp-table th, .comp-table td { border:1px solid #e2e8f0; padding:8px 10px; text-align:left; vertical-align:top; }
+    .comp-table th { background:#f8fafc; color:#334155; white-space:nowrap; }
+    .comp-badge { display:inline-block; border-radius:999px; padding:3px 8px; font-size:12px; font-weight:700; white-space:nowrap; background:#e0f2fe; color:#075985; }
+    .comp-gap { background:#fee2e2; color:#991b1b; }
+    .comp-partial { background:#fef3c7; color:#92400e; }
+    .comp-ok { background:#dcfce7; color:#166534; }
+</style>
+
+{% set summary = compliance.summary %}
+
+<div class="comp-section">
+    <div class="comp-header">
+        <h2 class="text-xl font-semibold">Соответствие стандартам</h2>
+        <p class="text-sm text-gray-600">Покрытие требований ISO/IEC 27001, IEC 62443, NIST CSF и NISTIR 8259 через меры обработки рисков.</p>
+    </div>
+    <div class="comp-body">
+        <div class="comp-kpis">
+            <div class="comp-kpi"><div class="comp-kpi-value">{{ summary.requirements }}</div><div class="comp-kpi-label">Требований</div></div>
+            <div class="comp-kpi"><div class="comp-kpi-value">{{ summary.implemented }}</div><div class="comp-kpi-label">Implemented / Verified</div></div>
+            <div class="comp-kpi"><div class="comp-kpi-value">{{ summary.partial }}</div><div class="comp-kpi-label">Partially implemented</div></div>
+            <div class="comp-kpi"><div class="comp-kpi-value">{{ summary.gaps }}</div><div class="comp-kpi-label">Gaps / not assessed</div></div>
+            <div class="comp-kpi"><div class="comp-kpi-value">{{ summary.evidence }}</div><div class="comp-kpi-label">Evidence records</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="comp-section">
+    <div class="comp-header"><h3 class="font-semibold">Покрытие по стандартам</h3></div>
+    <div class="comp-body comp-scroll">
+        <table class="comp-table">
+            <thead><tr><th>Стандарт</th><th>Версия</th><th>Требований</th><th>Связано</th><th>Verified</th><th>Implemented</th><th>Partial</th><th>Gaps</th></tr></thead>
+            <tbody>
+                {% for item in compliance.standards %}
+                    <tr>
+                        <td>{{ item[1] }}</td>
+                        <td>{{ item[2] or '' }}</td>
+                        <td>{{ item[3] }}</td>
+                        <td>{{ item[4] }}</td>
+                        <td>{{ item[5] or 0 }}</td>
+                        <td>{{ item[6] or 0 }}</td>
+                        <td>{{ item[7] or 0 }}</td>
+                        <td>{{ item[8] or 0 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="comp-section">
+    <div class="comp-header"><h3 class="font-semibold">Требования и gaps</h3></div>
+    <div class="comp-body comp-scroll">
+        <table class="comp-table">
+            <thead><tr><th>Стандарт</th><th>Код</th><th>Требование</th><th>Домен</th><th>Статус</th><th>Evidence</th></tr></thead>
+            <tbody>
+                {% for item in compliance.requirements %}
+                    {% set status = compliance.status_labels.get(item[6], 'Not assessed') %}
+                    <tr>
+                        <td>{{ item[1] }} {{ item[2] or '' }}</td>
+                        <td>{{ item[3] }}</td>
+                        <td>{{ item[4] }}</td>
+                        <td>{{ item[5] or '' }}</td>
+                        <td>
+                            <span class="comp-badge {{ 'comp-ok' if item[6] >= 3 else 'comp-partial' if item[6] == 2 else 'comp-gap' }}">{{ status }}</span>
+                        </td>
+                        <td>{{ item[7] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="comp-section">
+    <div class="comp-header"><h3 class="font-semibold">Evidence по мерам обработки</h3></div>
+    <div class="comp-body comp-scroll">
+        <table class="comp-table">
+            <thead><tr><th>Стандарт</th><th>Код</th><th>Требование</th><th>Статус</th><th>Мера</th><th>Процесс</th><th>Evidence</th><th>Действие</th></tr></thead>
+            <tbody>
+                {% for item in compliance.evidence %}
+                    <tr>
+                        <td>{{ item[1] }}</td>
+                        <td>{{ item[2] }}</td>
+                        <td>{{ item[3] }}</td>
+                        <td><span class="comp-badge {{ 'comp-ok' if item[5] in ['Implemented', 'Verified'] else 'comp-partial' if item[5] == 'Partially implemented' else 'comp-gap' }}">{{ item[5] }}</span></td>
+                        <td>{{ item[7] or '-' }}</td>
+                        <td>{{ item[8] or '-' }}</td>
+                        <td>{{ item[6] or '' }}</td>
+                        <td>{% if session.get('role') != 'auditor' %}<a href="{{ url_for('edit_compliance_evidence', id=item[0]) }}" class="text-blue-600">Редактировать</a>{% else %}-{% endif %}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="8" class="text-gray-500">Evidence пока не связано с мерами обработки.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

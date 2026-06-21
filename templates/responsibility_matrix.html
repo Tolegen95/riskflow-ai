@@ -1,0 +1,105 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .raci-section { background:white; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:16px; }
+    .raci-header { padding:12px 14px; border-bottom:1px solid #e2e8f0; }
+    .raci-body { padding:14px; }
+    .raci-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin-bottom:16px; }
+    .raci-kpi { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; }
+    .raci-kpi-value { font-size:24px; font-weight:800; color:#0f172a; }
+    .raci-kpi-label { color:#64748b; font-size:12px; font-weight:700; text-transform:uppercase; }
+    .raci-scroll { max-width:100%; overflow-x:auto; }
+    .raci-table { width:100%; min-width:1080px; border-collapse:collapse; font-size:14px; }
+    .raci-table th, .raci-table td { border:1px solid #e2e8f0; padding:8px 10px; text-align:left; vertical-align:top; }
+    .raci-table th { background:#f8fafc; color:#334155; white-space:nowrap; }
+    .raci-missing { color:#b91c1c; font-weight:700; }
+    .raci-role { color:#64748b; font-size:12px; }
+</style>
+
+<div class="raci-section">
+    <div class="raci-header">
+        <h2 class="text-xl font-semibold">Матрица ответственности</h2>
+        <p class="text-sm text-gray-600">Связка процессов, рисков и мер с конкретными пользователями системы.</p>
+    </div>
+    <div class="raci-body">
+        <div class="raci-kpis">
+            <div class="raci-kpi"><div class="raci-kpi-value">{{ summary.processes_without_owner }}</div><div class="raci-kpi-label">Процессов без владельца</div></div>
+            <div class="raci-kpi"><div class="raci-kpi-value">{{ summary.risks_without_owner }}</div><div class="raci-kpi-label">Рисков без risk owner</div></div>
+            <div class="raci-kpi"><div class="raci-kpi-value">{{ summary.risks_without_mitigation_owner }}</div><div class="raci-kpi-label">Рисков без mitigation owner</div></div>
+            <div class="raci-kpi"><div class="raci-kpi-value">{{ summary.treatments_without_owner }}</div><div class="raci-kpi-label">Мер без ответственного</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="raci-section">
+    <div class="raci-header"><h3 class="font-semibold">Процессы</h3></div>
+    <div class="raci-body raci-scroll">
+        <table class="raci-table">
+            <thead><tr><th>Компания</th><th>Процесс</th><th>Владелец</th><th>Рисков</th><th>Высоких</th><th>Мер</th><th>Действие</th></tr></thead>
+            <tbody>
+                {% for item in processes %}
+                    <tr>
+                        <td>{{ item[2] }}</td>
+                        <td>{{ item[1] }}</td>
+                        <td>
+                            {% if item[4] %}{{ item[4] }}<div class="raci-role">{{ item[5] | role_label }}</div>{% elif item[3] %}{{ item[3] }}{% else %}<span class="raci-missing">Не назначен</span>{% endif %}
+                        </td>
+                        <td>{{ item[6] }}</td>
+                        <td>{{ item[7] or 0 }}</td>
+                        <td>{{ item[8] }}</td>
+                        <td>{% if session.get('role') == 'admin' %}<a href="{{ url_for('edit_process', id=item[0]) }}" class="text-blue-600">Назначить</a>{% else %}-{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="raci-section">
+    <div class="raci-header"><h3 class="font-semibold">Риски</h3></div>
+    <div class="raci-body raci-scroll">
+        <table class="raci-table">
+            <thead><tr><th>Процесс</th><th>Риск</th><th>Уровень</th><th>Residual</th><th>Статус</th><th>Risk owner</th><th>Mitigation owner</th><th>Due</th><th>Действие</th></tr></thead>
+            <tbody>
+                {% for risk in risks %}
+                    <tr>
+                        <td>{{ risk[1] }}{% if risk[2] %}<br><span class="text-gray-500">{{ risk[2] }}</span>{% endif %}</td>
+                        <td>{{ risk[3] or '' }}</td>
+                        <td>{{ risk[4] or '' }}</td>
+                        <td>{{ risk[5] | risk_number }}</td>
+                        <td>{{ risk[6] }}</td>
+                        <td>{% if risk[8] %}{{ risk[8] }}<div class="raci-role">{{ risk[9] | role_label }}</div>{% elif risk[7] %}{{ risk[7] }}{% else %}<span class="raci-missing">Не назначен</span>{% endif %}</td>
+                        <td>{% if risk[11] %}{{ risk[11] }}<div class="raci-role">{{ risk[12] | role_label }}</div>{% elif risk[10] %}{{ risk[10] }}{% else %}<span class="raci-missing">Не назначен</span>{% endif %}</td>
+                        <td>{{ risk[13] or '-' }}</td>
+                        <td>{% if session.get('role') in ['admin', 'risk_manager', 'process_owner'] %}<a href="{{ url_for('edit_process_risk', id=risk[0]) }}" class="text-blue-600">Открыть</a>{% else %}-{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="raci-section">
+    <div class="raci-header"><h3 class="font-semibold">Меры обработки</h3></div>
+    <div class="raci-body raci-scroll">
+        <table class="raci-table">
+            <thead><tr><th>Мера</th><th>Процесс</th><th>Риск</th><th>Ответственный</th><th>Due</th><th>Прогресс</th><th>Статус</th><th>Residual</th><th>Действие</th></tr></thead>
+            <tbody>
+                {% for item in treatments %}
+                    <tr>
+                        <td>{{ item[1] }}</td>
+                        <td>{{ item[2] }}</td>
+                        <td>{{ item[3] or '' }}</td>
+                        <td>{% if item[5] %}{{ item[5] }}<div class="raci-role">{{ item[6] | role_label }}</div>{% elif item[4] %}{{ item[4] }}{% else %}<span class="raci-missing">Не назначен</span>{% endif %}</td>
+                        <td>{{ item[7] or '-' }}</td>
+                        <td>{{ item[8] or 0 }}%</td>
+                        <td>{{ item[9] }}</td>
+                        <td>{{ item[10] | risk_number }}</td>
+                        <td>{% if session.get('role') in ['admin', 'risk_manager', 'process_owner'] %}<a href="{{ url_for('edit_risk_treatment', id=item[0]) }}" class="text-blue-600">Открыть</a>{% else %}-{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

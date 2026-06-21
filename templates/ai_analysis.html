@@ -1,0 +1,200 @@
+{% extends "index.html" %}
+{% block content %}
+<style>
+    .analysis-page { max-width: 1100px; }
+    .analysis-hero,
+    .analysis-section {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 14px;
+    }
+    .analysis-hero {
+        border-left: 4px solid #2563eb;
+        padding: 16px;
+    }
+    .analysis-title {
+        color: #0f172a;
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+    .analysis-note,
+    .analysis-text {
+        color: #475569;
+        font-size: 14px;
+        margin-top: 6px;
+    }
+    .analysis-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .analysis-btn {
+        background: #2563eb;
+        border-radius: 4px;
+        color: #ffffff;
+        display: inline-block;
+        font-weight: 700;
+        padding: 8px 12px;
+        text-decoration: none;
+    }
+    .analysis-btn.secondary { background: #475569; }
+    .analysis-btn.green { background: #059669; }
+    .analysis-section-header {
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+        font-weight: 800;
+        padding: 12px 14px;
+    }
+    .analysis-section-body { padding: 14px; }
+    .analysis-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    }
+    .analysis-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 10px;
+    }
+    .analysis-label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .analysis-value {
+        color: #0f172a;
+        font-size: 22px;
+        font-weight: 800;
+        margin-top: 4px;
+    }
+    .rating-low { background-color: #dcfce7; color: #166534; }
+    .rating-medium { background-color: #fef9c3; color: #854d0e; }
+    .rating-high { background-color: #ffedd5; color: #9a3412; }
+    .rating-critical { background-color: #fee2e2; color: #991b1b; }
+    .rating-box {
+        border-radius: 8px;
+        padding: 12px;
+    }
+    .analysis-list {
+        list-style: disc;
+        padding-left: 18px;
+    }
+    .analysis-list li {
+        color: #475569;
+        margin-bottom: 6px;
+    }
+</style>
+
+<div class="analysis-page">
+    <section class="analysis-hero">
+        <div class="analysis-title">Анализ процесса реагирования: {{ process[2] }}</div>
+        <div class="analysis-note">
+            Этот экран помогает быстро объяснить, какие пробелы процесса требуют внимания и какие действия
+            нужно включить в план улучшения. Это вспомогательный анализ, а не самостоятельное научное заключение.
+        </div>
+        <div class="analysis-actions">
+            <a href="{{ url_for('process_report', process_id=process[0]) }}" class="analysis-btn green">Отчет</a>
+            <a href="{{ url_for('process_detail', id=process[0]) }}" class="analysis-btn">Карточка процесса</a>
+            <a href="{{ url_for('list_risk_treatments') }}" class="analysis-btn secondary">Рекомендации</a>
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <div class="analysis-section-header">1. Общая оценка</div>
+        <div class="analysis-section-body">
+            <div class="rating-box {% if analysis.rating == 'Critical' %}rating-critical{% elif analysis.rating == 'High' %}rating-high{% elif analysis.rating == 'Medium' %}rating-medium{% else %}rating-low{% endif %}">
+                <div class="analysis-label">Уровень внимания</div>
+                <div class="analysis-value">{{ analysis.rating }}</div>
+                <div class="analysis-text">{{ analysis.summary }}</div>
+            </div>
+            <div class="analysis-grid mt-3">
+                <div class="analysis-card"><div class="analysis-label">Итоговая оценка</div><div class="analysis-value">{{ analysis.score }} / 9</div></div>
+                <div class="analysis-card"><div class="analysis-label">Пробелов</div><div class="analysis-value">{{ summary.risk_count }}</div></div>
+                <div class="analysis-card"><div class="analysis-label">Критичных</div><div class="analysis-value">{{ summary.high_count }}</div></div>
+                <div class="analysis-card"><div class="analysis-label">Макс. оценка</div><div class="analysis-value">{{ summary.max_residual_risk }}</div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <div class="analysis-section-header">2. Ключевой пробел</div>
+        <div class="analysis-section-body">
+            {% if analysis.top_risk %}
+                <div class="analysis-grid">
+                    <div class="analysis-card"><div class="analysis-label">Шаг процесса</div><div class="analysis-text">{{ analysis.top_risk.subprocess_name or 'Не указан' }}</div></div>
+                    <div class="analysis-card"><div class="analysis-label">Оценка</div><div class="analysis-value">{{ analysis.top_risk.residual_risk | round(2) }}</div></div>
+                    <div class="analysis-card"><div class="analysis-label">Проблема</div><div class="analysis-text">{{ analysis.top_risk.risk_description or analysis.top_risk.threat_name or 'Описание не задано' }}</div></div>
+                </div>
+                <div class="analysis-text">
+                    Этот пробел имеет максимальную оценку среди описанных шагов процесса и должен быть первым кандидатом
+                    для плана улучшения.
+                </div>
+            {% else %}
+                <p class="analysis-text">Нет данных для анализа. Добавьте пробелы процесса.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <div class="analysis-section-header">3. Что мешает зрелости процесса</div>
+        <div class="analysis-section-body">
+            <div class="analysis-grid">
+                <div class="analysis-card">
+                    <div class="analysis-label">Слабые контроли</div>
+                    {% if analysis.weak_control_risks %}
+                        <ul class="analysis-list">
+                            {% for risk in analysis.weak_control_risks %}
+                                <li>{{ risk.subprocess_name or 'Шаг не указан' }}: оценка {{ risk.residual_risk | round(2) }}, контроль {{ risk.control_effectiveness | round(2) }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="analysis-text">Критичных слабых контролей не выявлено.</div>
+                    {% endif %}
+                </div>
+                <div class="analysis-card">
+                    <div class="analysis-label">Пробелы без контроля</div>
+                    {% if analysis.missing_control_risks %}
+                        <ul class="analysis-list">
+                            {% for risk in analysis.missing_control_risks %}
+                                <li>{{ risk.subprocess_name or 'Шаг не указан' }}: {{ risk.risk_description or 'описание не задано' }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="analysis-text">Для описанных пробелов назначены контроли.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <div class="analysis-section-header">4. Приоритетные действия</div>
+        <div class="analysis-section-body">
+            <ol class="list-decimal pl-6">
+                {% for action in analysis.priority_actions %}
+                    <li class="mb-2 text-gray-700">{{ action }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <div class="analysis-section-header">5. Формулировка для защиты</div>
+        <div class="analysis-section-body">
+            <p class="analysis-text">
+                Анализ показывает, что процесс имеет уровень внимания <strong>{{ analysis.rating }}</strong>.
+                {% if analysis.top_risk %}
+                    Наиболее значимый пробел связан с шагом
+                    <strong>{{ analysis.top_risk.subprocess_name or 'без названия' }}</strong>.
+                {% endif %}
+                Следующий шаг методики - включить приоритетные действия в план рекомендаций и затем повторно проверить процесс.
+            </p>
+        </div>
+    </section>
+</div>
+{% endblock %}

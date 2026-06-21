@@ -1,0 +1,394 @@
+<style>
+    .bpmn-canvas {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 18px;
+        overflow-x: auto;
+    }
+    .bpmn-viewer-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .bpmn-zoom-controls {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+    .bpmn-zoom-btn {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background: white;
+        color: #0f172a;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 6px 9px;
+    }
+    .bpmn-zoom-btn:hover {
+        border-color: #2563eb;
+        background: #eff6ff;
+    }
+    .bpmn-viewport {
+        overflow: auto;
+    }
+    .bpmn-svg {
+        display: block;
+        min-width: 100%;
+        transform-origin: top left;
+    }
+    .bpmn-edge {
+        fill: none;
+        stroke: #334155;
+        stroke-width: 3;
+    }
+    .bpmn-edge-label-bg {
+        fill: #f8fafc;
+        stroke: #cbd5e1;
+        stroke-width: 1;
+        rx: 10;
+    }
+    .bpmn-edge-label {
+        fill: #334155;
+        font-size: 12px;
+        font-weight: 600;
+        text-anchor: middle;
+    }
+    .bpmn-task {
+        fill: white;
+        stroke: #2563eb;
+        stroke-width: 2;
+        rx: 8;
+    }
+    .bpmn-start {
+        fill: #ecfdf5;
+        stroke: #059669;
+        stroke-width: 3;
+    }
+    .bpmn-end {
+        fill: #fef2f2;
+        stroke: #dc2626;
+        stroke-width: 4;
+    }
+    .bpmn-gateway {
+        fill: #fffbeb;
+        stroke: #d97706;
+        stroke-width: 2;
+    }
+    .bpmn-risk-low {
+        fill: #bbf7d0;
+        stroke: #047857;
+    }
+    .bpmn-risk-medium {
+        fill: #fde68a;
+        stroke: #b45309;
+        stroke-width: 3;
+    }
+    .bpmn-risk-high {
+        fill: #fecaca;
+        stroke: #b91c1c;
+        stroke-width: 4;
+    }
+    .bpmn-node-type {
+        fill: #64748b;
+        font-size: 10px;
+        text-anchor: middle;
+        text-transform: uppercase;
+    }
+    .bpmn-node-label {
+        fill: #0f172a;
+        font-size: 12px;
+        font-weight: 700;
+        text-anchor: middle;
+    }
+    .bpmn-node-id {
+        fill: #94a3b8;
+        font-size: 10px;
+        text-anchor: middle;
+    }
+    .bpmn-node-risk {
+        fill: #475569;
+        font-size: 10px;
+        font-weight: 700;
+        text-anchor: middle;
+    }
+    .bpmn-node-group {
+        cursor: pointer;
+    }
+    .bpmn-node-group:hover .bpmn-task,
+    .bpmn-node-group:hover .bpmn-start,
+    .bpmn-node-group:hover .bpmn-end,
+    .bpmn-node-group:hover .bpmn-gateway {
+        filter: drop-shadow(0 6px 10px rgba(37, 99, 235, 0.25));
+    }
+    .bpmn-node-group.critical .bpmn-task,
+    .bpmn-node-group.critical .bpmn-start,
+    .bpmn-node-group.critical .bpmn-end,
+    .bpmn-node-group.critical .bpmn-gateway {
+        stroke: #be123c;
+        stroke-width: 5;
+    }
+    .bpmn-edge.critical {
+        stroke: #be123c;
+        stroke-width: 5;
+    }
+    .bpmn-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+    }
+    .bpmn-badge {
+        border: 1px solid #cbd5e1;
+        border-radius: 999px;
+        color: #475569;
+        font-size: 12px;
+        padding: 3px 8px;
+        background: white;
+    }
+    .bpmn-badge.warning {
+        border-color: #fde68a;
+        background: #fffbeb;
+        color: #92400e;
+    }
+    .bpmn-badge.high {
+        border-color: #fecaca;
+        background: #fef2f2;
+        color: #991b1b;
+    }
+    .bpmn-node-details {
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: white;
+        margin-top: 12px;
+        padding: 12px;
+    }
+    .bpmn-node-details h4 {
+        color: #0f172a;
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0 0 6px;
+    }
+    .bpmn-node-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .bpmn-node-details-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 8px;
+        font-size: 13px;
+    }
+    .bpmn-node-details-label {
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+</style>
+
+{% if bpmn_model.nodes %}
+    {% set critical_nodes = bpmn_critical_path.best.node_ids if bpmn_critical_path is defined and bpmn_critical_path and bpmn_critical_path.best else [] %}
+    {% set critical_edges = bpmn_critical_path.best.edge_keys if bpmn_critical_path is defined and bpmn_critical_path and bpmn_critical_path.best else [] %}
+    {% set metrics = namespace(high=0, medium=0, low=0, unlinked=0) %}
+    {% for node in bpmn_model.nodes %}
+        {% if node.risk_class == 'high' %}{% set metrics.high = metrics.high + 1 %}{% endif %}
+        {% if node.risk_class == 'medium' %}{% set metrics.medium = metrics.medium + 1 %}{% endif %}
+        {% if node.risk_class == 'low' %}{% set metrics.low = metrics.low + 1 %}{% endif %}
+        {% if node.type not in ['start', 'end', 'gateway'] and not node.subprocess_id %}{% set metrics.unlinked = metrics.unlinked + 1 %}{% endif %}
+    {% endfor %}
+    <div class="bpmn-canvas" data-bpmn-viewer>
+        <div class="bpmn-viewer-toolbar">
+            <div class="bpmn-meta" style="margin-top:0">
+                <span class="bpmn-badge">Высокий риск: {{ metrics.high }}</span>
+                <span class="bpmn-badge">Средний: {{ metrics.medium }}</span>
+                <span class="bpmn-badge">Низкий: {{ metrics.low }}</span>
+                {% if metrics.unlinked %}
+                    <span class="bpmn-badge warning">Без подпроцесса: {{ metrics.unlinked }}</span>
+                {% endif %}
+            </div>
+            <div class="bpmn-zoom-controls">
+                <button type="button" class="bpmn-zoom-btn" data-bpmn-zoom="-0.1">-</button>
+                <button type="button" class="bpmn-zoom-btn" data-bpmn-fit>По ширине</button>
+                <button type="button" class="bpmn-zoom-btn" data-bpmn-reset>100%</button>
+                <button type="button" class="bpmn-zoom-btn" data-bpmn-zoom="0.1">+</button>
+            </div>
+        </div>
+        <div class="bpmn-viewport">
+            <svg class="bpmn-svg" width="{{ bpmn_model.layout.width }}" height="{{ bpmn_model.layout.height }}" viewBox="0 0 {{ bpmn_model.layout.width }} {{ bpmn_model.layout.height }}" role="img" aria-label="BPMN process diagram" data-base-width="{{ bpmn_model.layout.width }}" data-base-height="{{ bpmn_model.layout.height }}">
+                <defs>
+                    <marker id="bpmn-arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+                        <path d="M 0 0 L 10 4 L 0 8 z" fill="#64748b"></path>
+                    </marker>
+                </defs>
+
+                {% for edge in bpmn_model.layout.edges %}
+                    <path class="bpmn-edge{% if (edge['from'] ~ '->' ~ edge['to']) in critical_edges %} critical{% endif %}" d="{{ edge.path }}" marker-end="url(#bpmn-arrowhead)"></path>
+                    {% if edge.label %}
+                        <rect class="bpmn-edge-label-bg" x="{{ edge.label_x - 22 }}" y="{{ edge.label_y - 14 }}" width="44" height="20"></rect>
+                        <text class="bpmn-edge-label" x="{{ edge.label_x }}" y="{{ edge.label_y }}">{{ edge.label }}</text>
+                    {% endif %}
+                {% endfor %}
+
+                {% for node in bpmn_model.layout.nodes %}
+                    <g class="bpmn-node-group{% if node.id in critical_nodes %} critical{% endif %}" data-bpmn-node-id="{{ node.id }}" data-bpmn-node-label="{{ node.label }}">
+                        <title>{{ node.label }}{% if node.risk_category %} - {{ node.risk_category }}{% endif %}</title>
+                        {% if node.type == 'start' %}
+                            <circle class="bpmn-start bpmn-risk-{{ node.risk_class }}" cx="{{ node.cx }}" cy="{{ node.cy }}" r="{{ node.width / 2 }}"></circle>
+                        {% elif node.type == 'end' %}
+                            <circle class="bpmn-end bpmn-risk-{{ node.risk_class }}" cx="{{ node.cx }}" cy="{{ node.cy }}" r="{{ node.width / 2 }}"></circle>
+                        {% elif node.type == 'gateway' %}
+                            <polygon class="bpmn-gateway bpmn-risk-{{ node.risk_class }}" points="{{ node.cx }},{{ node.y }} {{ node.x + node.width }},{{ node.cy }} {{ node.cx }},{{ node.y + node.height }} {{ node.x }},{{ node.cy }}"></polygon>
+                        {% else %}
+                            <rect class="bpmn-task bpmn-risk-{{ node.risk_class }}" x="{{ node.x }}" y="{{ node.y }}" width="{{ node.width }}" height="{{ node.height }}"></rect>
+                        {% endif %}
+
+                        <text class="bpmn-node-label" x="{{ node.cx }}" y="{{ node.cy }}">
+                            {% for line in node.label_lines %}
+                                <tspan x="{{ node.cx }}" dy="{{ node.label_start_dy if loop.first else 14 }}">{{ line }}</tspan>
+                            {% endfor %}
+                        </text>
+                        {% if node.subprocess_id %}
+                            <text class="bpmn-node-risk" x="{{ node.cx }}" y="{{ node.y + node.height + 16 }}">
+                                {{ node.risk_category }}{% if node.risk_score is not none %}: {{ node.risk_score }}{% endif %}
+                            </text>
+                        {% endif %}
+                    </g>
+                {% endfor %}
+            </svg>
+        </div>
+
+        <div class="bpmn-node-details" data-bpmn-node-details>
+            <h4>Карточка BPMN-узла</h4>
+            <div class="bpmn-muted">Нажмите на узел схемы, чтобы увидеть связанный подпроцесс, риски, активы, угрозы и меры контроля.</div>
+        </div>
+
+        <div class="bpmn-meta">
+            <span class="bpmn-badge">Узлы: {{ bpmn_model.nodes | length }}</span>
+            <span class="bpmn-badge">Связи: {{ bpmn_model.edges | length }}</span>
+            <span class="bpmn-badge">Зеленый: низкий риск</span>
+            <span class="bpmn-badge">Желтый: средний</span>
+            <span class="bpmn-badge">Красный: высокий</span>
+            {% for node in bpmn_model.nodes %}
+                {% if bpmn_model.outgoing.get(node.id, []) | length > 1 %}
+                    <span class="bpmn-badge">Разветвление: {{ node.label or node.id }}</span>
+                {% endif %}
+                {% if node.subprocess_id %}
+                    <span class="bpmn-badge{% if node.risk_class == 'high' %} high{% endif %}">{{ node.label or node.id }}: {{ node.risk_category }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if bpmn_model.edges %}
+        <details class="mt-3">
+            <summary class="cursor-pointer text-blue-600">Показать связи BPMN</summary>
+            <ul class="list-disc pl-6 mt-2">
+                {% for edge in bpmn_model.edges %}
+                    <li>
+                        {{ edge['from'] }} → {{ edge['to'] }}
+                        {% if edge.label %}({{ edge.label }}){% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </details>
+    {% endif %}
+{% else %}
+    <p class="text-gray-600">BPMN JSON не задан или не распознан.</p>
+    {% if bpmn_model.raw %}<pre class="bg-gray-200 p-4 overflow-auto">{{ bpmn_model.raw }}</pre>{% endif %}
+{% endif %}
+
+<script>
+(() => {
+    document.querySelectorAll('[data-bpmn-viewer]').forEach((viewer) => {
+        const viewport = viewer.querySelector('.bpmn-viewport');
+        const svg = viewer.querySelector('.bpmn-svg');
+        if (!viewport || !svg || svg.dataset.viewerReady) return;
+        svg.dataset.viewerReady = '1';
+        const baseWidth = Number(svg.dataset.baseWidth || svg.getAttribute('width') || 1);
+        const baseHeight = Number(svg.dataset.baseHeight || svg.getAttribute('height') || 1);
+        let scale = 1;
+
+        function applyScale() {
+            svg.setAttribute('width', String(Math.round(baseWidth * scale)));
+            svg.setAttribute('height', String(Math.round(baseHeight * scale)));
+            svg.style.width = `${Math.round(baseWidth * scale)}px`;
+            svg.style.height = `${Math.round(baseHeight * scale)}px`;
+        }
+
+        viewer.querySelectorAll('[data-bpmn-zoom]').forEach((button) => {
+            button.addEventListener('click', () => {
+                scale = Math.min(1.8, Math.max(0.45, scale + Number(button.dataset.bpmnZoom)));
+                applyScale();
+            });
+        });
+        viewer.querySelector('[data-bpmn-reset]')?.addEventListener('click', () => {
+            scale = 1;
+            applyScale();
+        });
+        viewer.querySelector('[data-bpmn-fit]')?.addEventListener('click', () => {
+            const availableWidth = Math.max(320, viewport.clientWidth - 8);
+            scale = Math.min(1.2, Math.max(0.45, availableWidth / baseWidth));
+            applyScale();
+        });
+        const contextItems = {{ bpmn_business_context['items'] | tojson if bpmn_business_context is defined and bpmn_business_context else '[]' }};
+        const contextByNode = new Map(contextItems.map((item) => [String(item.node_id), item]));
+        const details = viewer.querySelector('[data-bpmn-node-details]');
+        const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[char]));
+        viewer.querySelectorAll('[data-bpmn-node-id]').forEach((nodeElement) => {
+            nodeElement.addEventListener('click', () => {
+                const nodeId = nodeElement.dataset.bpmnNodeId;
+                const context = contextByNode.get(String(nodeId));
+                if (!details) return;
+                if (!context) {
+                    details.innerHTML = `
+                        <h4>${escapeHtml(nodeElement.dataset.bpmnNodeLabel || nodeId)}</h4>
+                        <div class="bpmn-muted">Для этого узла нет связанного бизнес-контекста.</div>
+                    `;
+                    return;
+                }
+                const subprocess = context.subprocess || {};
+                const topRisks = (context.risks || []).slice(0, 3).map((risk) => `
+                    <div class="bpmn-node-details-card">
+                        <div class="bpmn-node-details-label">Пробел</div>
+                        <div><strong>${escapeHtml(risk.risk_category || '')}</strong>: ${escapeHtml(risk.description || 'Риск')}</div>
+                        <div class="bpmn-muted">Начальная оценка ${escapeHtml(risk.initial_risk)} → остаточная ${escapeHtml(risk.residual_risk)}</div>
+                    </div>
+                `).join('');
+                details.innerHTML = `
+                    <h4>${escapeHtml(context.node_label || nodeId)}</h4>
+                    <div class="bpmn-muted">${escapeHtml(subprocess.name || 'Узел не связан с подпроцессом')}</div>
+                    <div class="bpmn-node-details-grid">
+                        <div class="bpmn-node-details-card">
+                            <div class="bpmn-node-details-label">Ответственный</div>
+                            <div>${escapeHtml(subprocess.responsible_person || 'Не указан')}</div>
+                        </div>
+                        <div class="bpmn-node-details-card">
+                            <div class="bpmn-node-details-label">Системы</div>
+                            <div>${escapeHtml(subprocess.used_systems || 'Не указаны')}</div>
+                        </div>
+                        <div class="bpmn-node-details-card">
+                            <div class="bpmn-node-details-label">Максимальный остаточный риск</div>
+                            <div>${escapeHtml(context.max_residual_risk || 0)} · ${escapeHtml(context.risk_category || 'Нет риска')}</div>
+                        </div>
+                    </div>
+                    <div class="bpmn-node-details-grid">${topRisks || '<div class="bpmn-node-details-card bpmn-muted">Пробелы для этого шага не описаны.</div>'}</div>
+                `;
+            });
+        });
+        applyScale();
+    });
+})();
+</script>
