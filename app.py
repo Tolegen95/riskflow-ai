@@ -2677,7 +2677,7 @@ def load_data_quality_checks():
             make_quality_item(
                 row[1],
                 'Недостаточно экспертных голосов для устойчивой оценки критичности актива.',
-                url_for('list_asset_evaluations'),
+                url_for('list_experts'),
                 f"Оценок: {row[2]} из минимум 2",
             )
             for row in cursor.fetchall()
@@ -2701,7 +2701,7 @@ def load_data_quality_checks():
             make_quality_item(
                 row[1],
                 'Недостаточно голосов по вероятности угроз для IoT-актива.',
-                url_for('list_threat_probabilities'),
+                url_for('list_experts'),
                 f"Оценок: {row[2]} из минимум 2",
             )
             for row in cursor.fetchall()
