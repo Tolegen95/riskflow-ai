@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1600" height="520" fill="#ffffff"/>
+  <text x="20" y="28" font-size="16" font-weight="700" fill="#111827">Saved preview — Case Study 1: Information-security incident management</text>
+  <text x="20" y="50" font-size="12" fill="#374151">High risk: 1   Medium risk: 3   Low risk: 1   No subprocess bound: 5</text>
+
+  <!-- connectors -->
+  <g stroke="#991b1b" stroke-width="2" fill="none">
+    <line x1="95" y1="260" x2="150" y2="260" marker-end="url(#arrow)"/>
+    <line x1="270" y1="260" x2="330" y2="260" marker-end="url(#arrow)"/>
+    <line x1="450" y1="260" x2="510" y2="260" marker-end="url(#arrow)"/>
+    <line x1="630" y1="260" x2="690" y2="260" marker-end="url(#arrow)"/>
+    <!-- gateway branches -->
+    <path d="M 730 240 L 730 150 L 830 150" marker-end="url(#arrow)"/>
+    <path d="M 730 280 L 730 370 L 830 370" marker-end="url(#arrow)"/>
+    <line x1="950" y1="150" x2="1010" y2="150" marker-end="url(#arrow)"/>
+    <line x1="950" y1="370" x2="1010" y2="370" marker-end="url(#arrow)"/>
+    <path d="M 1130 150 L 1190 150 L 1190 250" marker-end="url(#arrow)"/>
+    <path d="M 1130 370 L 1190 370 L 1190 270" marker-end="url(#arrow)"/>
+    <line x1="1190" y1="260" x2="1250" y2="260" marker-end="url(#arrow)"/>
+    <line x1="1370" y1="260" x2="1430" y2="260" marker-end="url(#arrow)"/>
+    <line x1="1550" y1="260" x2="1580" y2="260" marker-end="url(#arrow)"/>
+  </g>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L6,3 z" fill="#991b1b"/>
+    </marker>
+  </defs>
+
+  <text x="757" y="140" font-size="12" fill="#374151">Yes</text>
+  <text x="757" y="395" font-size="12" fill="#374151">No</text>
+
+  <!-- start -->
+  <circle cx="60" cy="260" r="30" fill="#ffffff" stroke="#991b1b" stroke-width="2.5"/>
+  <text x="60" y="256" font-size="10.5" text-anchor="middle" fill="#111827">Incident</text>
+  <text x="60" y="269" font-size="10.5" text-anchor="middle" fill="#111827">occurs</text>
+
+  <!-- Log collection: Medium 5.94 -->
+  <rect x="150" y="228" width="120" height="64" rx="6" fill="#fde68a" stroke="#991b1b" stroke-width="2"/>
+  <text x="210" y="255" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">Log</text>
+  <text x="210" y="270" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">collection</text>
+  <text x="210" y="308" font-size="11" text-anchor="middle" fill="#374151">Medium: 5.94</text>
+
+  <!-- Normalization: unbound -->
+  <rect x="330" y="228" width="120" height="64" rx="6" fill="#ffffff" stroke="#9ca3af" stroke-width="1.6"/>
+  <text x="390" y="255" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">Normalization</text>
+  <text x="390" y="270" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">&amp; correlation</text>
+
+  <!-- Event analysis: High 8.09 -->
+  <rect x="510" y="228" width="120" height="64" rx="6" fill="#fecaca" stroke="#991b1b" stroke-width="2"/>
+  <text x="570" y="255" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">Event analysis</text>
+  <text x="570" y="270" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">(SIEM)</text>
+  <text x="570" y="308" font-size="11" text-anchor="middle" fill="#374151">High: 8.09</text>
+
+  <!-- Gateway: Incident classification, Medium 5.24 -->
+  <polygon points="730,210 800,260 730,310 660,260" fill="#fde68a" stroke="#991b1b" stroke-width="2"/>
+  <text x="730" y="256" font-size="10.5" text-anchor="middle" fill="#111827" font-weight="600">Critical</text>
+  <text x="730" y="269" font-size="10.5" text-anchor="middle" fill="#111827" font-weight="600">incident?</text>
+  <text x="730" y="335" font-size="11" text-anchor="middle" fill="#374151">Medium: 5.24</text>
+  <text x="730" y="349" font-size="9.5" text-anchor="middle" fill="#6b7280">(incident classification)</text>
+
+  <!-- Containment: Medium 6.60 (critical branch) -->
+  <rect x="830" y="118" width="120" height="64" rx="6" fill="#fde68a" stroke="#991b1b" stroke-width="2"/>
+  <text x="890" y="145" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">Response</text>
+  <text x="890" y="160" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">(containment)</text>
+  <text x="890" y="198" font-size="11" text-anchor="middle" fill="#374151">Medium: 6.60</text>
+
+  <!-- Standard response: unbound (non-critical branch) -->
+  <rect x="830" y="338" width="120" height="64" rx="6" fill="#ffffff" stroke="#9ca3af" stroke-width="1.6"/>
+  <text x="890" y="365" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">Standard</text>
+  <text x="890" y="380" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">response</text>
+
+  <!-- Deep analysis: unbound -->
+  <rect x="1010" y="118" width="120" height="64" rx="6" fill="#ffffff" stroke="#9ca3af" stroke-width="1.6"/>
+  <text x="1070" y="145" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">Deep</text>
+  <text x="1070" y="160" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">analysis</text>
+
+  <!-- Service restoration: unbound -->
+  <rect x="1010" y="338" width="120" height="64" rx="6" fill="#ffffff" stroke="#9ca3af" stroke-width="1.6"/>
+  <text x="1070" y="365" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">Service</text>
+  <text x="1070" y="380" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">restoration</text>
+
+  <!-- Post-incident review: unbound -->
+  <rect x="1190" y="228" width="120" height="64" rx="6" fill="#ffffff" stroke="#9ca3af" stroke-width="1.6"/>
+  <text x="1250" y="255" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">Post-incident</text>
+  <text x="1250" y="270" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">review</text>
+
+  <!-- Reporting: Low 3.04 -->
+  <rect x="1370" y="228" width="120" height="64" rx="6" fill="#bbf7d0" stroke="#991b1b" stroke-width="2"/>
+  <text x="1430" y="255" font-size="12" text-anchor="middle" fill="#111827" font-weight="600">Reporting</text>
+  <text x="1430" y="308" font-size="11" text-anchor="middle" fill="#374151">Low: 3.04</text>
+
+  <!-- end -->
+  <circle cx="1580" cy="260" r="30" fill="#ffffff" stroke="#991b1b" stroke-width="2.5"/>
+  <text x="1580" y="256" font-size="10" text-anchor="middle" fill="#111827">Incident</text>
+  <text x="1580" y="269" font-size="10" text-anchor="middle" fill="#111827">closed</text>
+</svg>

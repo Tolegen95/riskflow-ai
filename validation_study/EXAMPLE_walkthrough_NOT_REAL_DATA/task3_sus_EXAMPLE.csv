@@ -1,0 +1,6 @@
+expert_id,item1,item2,item3,item4,item5,item6,item7,item8,item9,item10,q11_clarity,q12_trust,q13_changed_mind,q14_improvement
+EXAMPLE-Expert-1,4,2,4,2,4,2,4,2,4,2,"Clear once I saw the color coding on the BPMN diagram","Yes for Medium risks, would double-check High ones","No, matched my own view","Show the underlying formula inline, not just the number"
+EXAMPLE-Expert-2,3,3,3,3,3,2,3,3,4,2,"Mostly clear, residual risk number needs a one-line definition on screen","Partially, I'd want to see the raw inputs alongside the score","Yes, on Incident classification I initially thought Medium not Low","Add a tooltip explaining potentiality"
+EXAMPLE-Expert-3,4,1,5,1,4,1,5,1,5,1,"Very clear, the categories matched my intuition","Yes, especially since I could recompute it by hand","No","Nothing major, maybe bulk CSV export of recommendations"
+EXAMPLE-Expert-4,3,2,4,2,3,2,4,2,3,3,"Clear, though I had to re-read the priority rule once","Yes for the recommendation text, less so for the exact number","Yes, on Response I moved from Medium to High after seeing the framework's reasoning","Clearer distinction between category and priority in the UI"
+EXAMPLE-Expert-5,4,2,4,1,4,2,4,2,4,2,"Clear","Yes","No","Would like a short glossary of P/V/I/CE on the same page"

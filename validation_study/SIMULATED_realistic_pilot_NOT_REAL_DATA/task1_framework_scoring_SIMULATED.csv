@@ -1,0 +1,85 @@
+expert_id,subprocess,P,V,I,CE
+SIM-Expert-1,IM - Log collection,2.6,2.4,2.7,0.45
+SIM-Expert-1,IM - Event analysis,2.7,2.8,2.9,0.38
+SIM-Expert-1,IM - Incident classification,2.4,2.5,2.8,0.52
+SIM-Expert-1,IM - Response,2.8,2.6,3.0,0.50
+SIM-Expert-1,IM - Reporting,2.1,2.2,2.3,0.60
+SIM-Expert-1,SCADA - Telemetry collection,2.4,2.3,2.9,0.40
+SIM-Expert-1,SCADA - Deviation analysis,2.6,2.5,3.0,0.30
+SIM-Expert-1,SCADA - Escalation,2.3,2.6,2.8,0.45
+SIM-Expert-1,SCADA - Response,2.2,2.4,3.0,0.35
+SIM-Expert-1,PD - Data collection,2.3,2.6,2.7,0.30
+SIM-Expert-1,PD - Consent verification,2.6,2.7,2.8,0.25
+SIM-Expert-1,PD - Processing,2.5,2.9,2.9,0.20
+SIM-Expert-1,PD - Storage,2.4,2.8,2.9,0.30
+SIM-Expert-1,PD - Deletion / archival,2.0,2.2,2.5,0.55
+SIM-Expert-2,IM - Log collection,2.4,2.2,2.6,0.55
+SIM-Expert-2,IM - Event analysis,2.5,2.6,2.8,0.48
+SIM-Expert-2,IM - Incident classification,2.2,2.3,2.7,0.62
+SIM-Expert-2,IM - Response,2.6,2.4,2.9,0.58
+SIM-Expert-2,IM - Reporting,1.9,2.0,2.2,0.70
+SIM-Expert-2,SCADA - Telemetry collection,2.2,2.1,2.8,0.50
+SIM-Expert-2,SCADA - Deviation analysis,2.4,2.3,2.9,0.42
+SIM-Expert-2,SCADA - Escalation,2.1,2.3,2.7,0.55
+SIM-Expert-2,SCADA - Response,2.0,2.2,2.9,0.48
+SIM-Expert-2,PD - Data collection,2.1,2.4,2.6,0.42
+SIM-Expert-2,PD - Consent verification,2.4,2.5,2.7,0.38
+SIM-Expert-2,PD - Processing,2.3,2.7,2.8,0.32
+SIM-Expert-2,PD - Storage,2.2,2.6,2.8,0.40
+SIM-Expert-2,PD - Deletion / archival,1.8,2.0,2.4,0.65
+SIM-Expert-3,IM - Log collection,2.8,2.6,2.8,0.35
+SIM-Expert-3,IM - Event analysis,2.9,3.0,3.0,0.25
+SIM-Expert-3,IM - Incident classification,2.6,2.7,2.9,0.42
+SIM-Expert-3,IM - Response,3.0,2.8,3.0,0.40
+SIM-Expert-3,IM - Reporting,2.3,2.4,2.5,0.50
+SIM-Expert-3,SCADA - Telemetry collection,2.6,2.5,3.0,0.30
+SIM-Expert-3,SCADA - Deviation analysis,2.8,2.8,3.0,0.20
+SIM-Expert-3,SCADA - Escalation,2.5,2.8,3.0,0.35
+SIM-Expert-3,SCADA - Response,2.4,2.7,3.0,0.25
+SIM-Expert-3,PD - Data collection,2.5,2.8,2.9,0.20
+SIM-Expert-3,PD - Consent verification,2.8,2.9,3.0,0.15
+SIM-Expert-3,PD - Processing,2.7,3.0,3.0,0.10
+SIM-Expert-3,PD - Storage,2.6,3.0,3.0,0.20
+SIM-Expert-3,PD - Deletion / archival,2.2,2.5,2.7,0.45
+SIM-Expert-4,IM - Log collection,2.5,2.5,2.8,0.50
+SIM-Expert-4,IM - Event analysis,2.6,2.9,3.0,0.40
+SIM-Expert-4,IM - Incident classification,2.3,2.6,2.9,0.55
+SIM-Expert-4,IM - Response,2.7,2.7,3.0,0.52
+SIM-Expert-4,IM - Reporting,2.0,2.3,2.4,0.62
+SIM-Expert-4,SCADA - Telemetry collection,2.3,2.4,3.0,0.38
+SIM-Expert-4,SCADA - Deviation analysis,2.5,2.6,3.0,0.28
+SIM-Expert-4,SCADA - Escalation,2.2,2.7,2.9,0.43
+SIM-Expert-4,SCADA - Response,2.1,2.5,3.0,0.33
+SIM-Expert-4,PD - Data collection,2.2,2.7,2.9,0.28
+SIM-Expert-4,PD - Consent verification,2.5,2.8,2.9,0.23
+SIM-Expert-4,PD - Processing,2.4,3.0,3.0,0.18
+SIM-Expert-4,PD - Storage,2.3,2.9,3.0,0.27
+SIM-Expert-4,PD - Deletion / archival,1.9,2.3,2.6,0.58
+SIM-Expert-5,IM - Log collection,2.7,2.3,2.9,0.42
+SIM-Expert-5,IM - Event analysis,2.8,2.7,3.0,0.35
+SIM-Expert-5,IM - Incident classification,2.5,2.4,3.0,0.50
+SIM-Expert-5,IM - Response,2.9,2.5,3.0,0.48
+SIM-Expert-5,IM - Reporting,2.2,2.1,2.6,0.58
+SIM-Expert-5,SCADA - Telemetry collection,2.5,2.2,3.0,0.36
+SIM-Expert-5,SCADA - Deviation analysis,2.7,2.4,3.0,0.27
+SIM-Expert-5,SCADA - Escalation,2.4,2.5,3.0,0.40
+SIM-Expert-5,SCADA - Response,2.3,2.3,3.0,0.32
+SIM-Expert-5,PD - Data collection,2.4,2.9,3.0,0.22
+SIM-Expert-5,PD - Consent verification,2.7,3.0,3.0,0.18
+SIM-Expert-5,PD - Processing,2.6,3.0,3.0,0.12
+SIM-Expert-5,PD - Storage,2.5,3.0,3.0,0.24
+SIM-Expert-5,PD - Deletion / archival,2.1,2.4,2.8,0.50
+SIM-Expert-6,IM - Log collection,2.5,2.4,2.7,0.48
+SIM-Expert-6,IM - Event analysis,2.6,2.8,2.9,0.36
+SIM-Expert-6,IM - Incident classification,2.3,2.5,2.8,0.54
+SIM-Expert-6,IM - Response,2.7,2.6,2.9,0.50
+SIM-Expert-6,IM - Reporting,2.0,2.2,2.3,0.63
+SIM-Expert-6,SCADA - Telemetry collection,2.3,2.3,2.9,0.42
+SIM-Expert-6,SCADA - Deviation analysis,2.5,2.5,3.0,0.32
+SIM-Expert-6,SCADA - Escalation,2.2,2.6,2.8,0.47
+SIM-Expert-6,SCADA - Response,2.1,2.4,3.0,0.37
+SIM-Expert-6,PD - Data collection,2.2,2.6,2.8,0.32
+SIM-Expert-6,PD - Consent verification,2.5,2.7,2.9,0.28
+SIM-Expert-6,PD - Processing,2.4,2.9,2.9,0.22
+SIM-Expert-6,PD - Storage,2.3,2.8,2.9,0.32
+SIM-Expert-6,PD - Deletion / archival,1.9,2.2,2.5,0.60

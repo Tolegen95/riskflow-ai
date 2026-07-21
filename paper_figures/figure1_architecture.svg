@@ -1,0 +1,141 @@
+<svg width="960" height="500" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <rect x="0" y="0" width="960" height="500" fill="#ffffff" rx="12"/>
+
+  <!-- Title -->
+  <text x="480" y="24" font-size="15" font-weight="800" fill="#0f172a" text-anchor="middle">Figure 1. System Architecture</text>
+
+  <!-- Layer: Users -->
+  <rect x="20" y="40" width="920" height="80" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5" rx="8"/>
+  <text x="40" y="62" font-size="11" font-weight="800" fill="#1e40af">PRESENTATION LAYER — 5 role-based user types</text>
+
+  <rect x="40"  y="70" width="130" height="38" fill="#2563eb" rx="6"/>
+  <text x="105" y="94" font-size="12" fill="white" text-anchor="middle" font-weight="700">Administrator</text>
+
+  <rect x="182" y="70" width="130" height="38" fill="#7c3aed" rx="6"/>
+  <text x="247" y="94" font-size="12" fill="white" text-anchor="middle" font-weight="700">Risk Manager</text>
+
+  <rect x="324" y="70" width="130" height="38" fill="#0891b2" rx="6"/>
+  <text x="389" y="94" font-size="12" fill="white" text-anchor="middle" font-weight="700">Process Owner</text>
+
+  <rect x="466" y="70" width="130" height="38" fill="#059669" rx="6"/>
+  <text x="531" y="94" font-size="12" fill="white" text-anchor="middle" font-weight="700">Expert</text>
+
+  <rect x="608" y="70" width="130" height="38" fill="#d97706" rx="6"/>
+  <text x="673" y="94" font-size="12" fill="white" text-anchor="middle" font-weight="700">Auditor</text>
+
+  <rect x="750" y="70" width="170" height="38" fill="#475569" rx="6"/>
+  <text x="835" y="87" font-size="11" fill="white" text-anchor="middle">Browser</text>
+  <text x="835" y="102" font-size="11" fill="white" text-anchor="middle">(Jinja2 + Tailwind CSS)</text>
+
+  <!-- Layer: Application -->
+  <rect x="20" y="138" width="920" height="220" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" rx="8"/>
+  <text x="40" y="160" font-size="11" font-weight="800" fill="#9a3412">APPLICATION LAYER — Flask (Python)</text>
+
+  <!-- Row 1 -->
+  <rect x="36"  y="168" width="120" height="48" fill="#2563eb" rx="6"/>
+  <text x="96"  y="188" font-size="11" fill="white" text-anchor="middle" font-weight="700">Organizations</text>
+  <text x="96"  y="204" font-size="10" fill="#bfdbfe" text-anchor="middle">companies / processes</text>
+
+  <rect x="166" y="168" width="120" height="48" fill="#2563eb" rx="6"/>
+  <text x="226" y="188" font-size="11" fill="white" text-anchor="middle" font-weight="700">Risk Register</text>
+  <text x="226" y="204" font-size="10" fill="#bfdbfe" text-anchor="middle">process_risks</text>
+
+  <rect x="296" y="168" width="120" height="48" fill="#2563eb" rx="6"/>
+  <text x="356" y="188" font-size="11" fill="white" text-anchor="middle" font-weight="700">Treatment Plans</text>
+  <text x="356" y="204" font-size="10" fill="#bfdbfe" text-anchor="middle">risk_treatment_actions</text>
+
+  <rect x="426" y="168" width="120" height="48" fill="#7c3aed" rx="6"/>
+  <text x="486" y="188" font-size="11" fill="white" text-anchor="middle" font-weight="700">Workflow Engine</text>
+  <text x="486" y="204" font-size="10" fill="#e9d5ff" text-anchor="middle">9 states, 5 actions</text>
+
+  <rect x="556" y="168" width="120" height="48" fill="#0891b2" rx="6"/>
+  <text x="616" y="188" font-size="11" fill="white" text-anchor="middle" font-weight="700">BPMN Module</text>
+  <text x="616" y="204" font-size="10" fill="#bae6fd" text-anchor="middle">JSON + SVG renderer</text>
+
+  <rect x="686" y="168" width="120" height="48" fill="#059669" rx="6"/>
+  <text x="746" y="188" font-size="11" fill="white" text-anchor="middle" font-weight="700">Rule-Based Module</text>
+  <text x="746" y="204" font-size="10" fill="#a7f3d0" text-anchor="middle">risk_recommender.py</text>
+
+  <rect x="816" y="168" width="108" height="48" fill="#d97706" rx="6"/>
+  <text x="870" y="188" font-size="11" fill="white" text-anchor="middle" font-weight="700">Compliance</text>
+  <text x="870" y="204" font-size="10" fill="#fef3c7" text-anchor="middle">ISO/IEC · NIST</text>
+
+  <!-- Row 2 -->
+  <rect x="36"  y="228" width="120" height="48" fill="#475569" rx="6"/>
+  <text x="96"  y="248" font-size="11" fill="white" text-anchor="middle" font-weight="700">Dashboard</text>
+  <text x="96"  y="264" font-size="10" fill="#cbd5e1" text-anchor="middle">KPIs, tasks</text>
+
+  <rect x="166" y="228" width="120" height="48" fill="#475569" rx="6"/>
+  <text x="226" y="248" font-size="11" fill="white" text-anchor="middle" font-weight="700">Responsibility Matrix</text>
+  <text x="226" y="264" font-size="10" fill="#cbd5e1" text-anchor="middle">RACI-style</text>
+
+  <rect x="296" y="228" width="120" height="48" fill="#475569" rx="6"/>
+  <text x="356" y="248" font-size="11" fill="white" text-anchor="middle" font-weight="700">Audit Log</text>
+  <text x="356" y="264" font-size="10" fill="#cbd5e1" text-anchor="middle">all operations</text>
+
+  <rect x="426" y="228" width="120" height="48" fill="#475569" rx="6"/>
+  <text x="486" y="248" font-size="11" fill="white" text-anchor="middle" font-weight="700">Analytics</text>
+  <text x="486" y="264" font-size="10" fill="#cbd5e1" text-anchor="middle">operational reports</text>
+
+  <rect x="556" y="228" width="120" height="48" fill="#475569" rx="6"/>
+  <text x="616" y="248" font-size="11" fill="white" text-anchor="middle" font-weight="700">Reports</text>
+  <text x="616" y="264" font-size="10" fill="#cbd5e1" text-anchor="middle">CSV · ZIP · HTML</text>
+
+  <rect x="686" y="228" width="120" height="48" fill="#475569" rx="6"/>
+  <text x="746" y="248" font-size="11" fill="white" text-anchor="middle" font-weight="700">Users / RBAC</text>
+  <text x="746" y="264" font-size="10" fill="#cbd5e1" text-anchor="middle">5 roles</text>
+
+  <rect x="816" y="228" width="108" height="48" fill="#475569" rx="6"/>
+  <text x="870" y="248" font-size="11" fill="white" text-anchor="middle" font-weight="700">Data Quality</text>
+  <text x="870" y="264" font-size="10" fill="#cbd5e1" text-anchor="middle">consistency checks</text>
+
+  <!-- Services strip -->
+  <rect x="36" y="288" width="888" height="36" fill="#1e3a5f" rx="6"/>
+  <text x="480" y="310" font-size="11.5" fill="#93c5fd" text-anchor="middle" font-weight="700">
+    services/risk_service.py — calculate_process_risk_metrics()   |   ai/risk_recommender.py — recommend_process_risk(), analyze_process_risks()
+  </text>
+
+  <!-- Layer: Data -->
+  <rect x="20" y="354" width="920" height="80" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5" rx="8"/>
+  <text x="40" y="376" font-size="11" font-weight="800" fill="#166534">DATA LAYER — relational store (SQLite prototype, 22 tables)</text>
+
+  <rect x="40"  y="384" width="100" height="28" fill="#16a34a" rx="4"/>
+  <text x="90"  y="403" font-size="11" fill="white" text-anchor="middle">processes</text>
+  <rect x="148" y="384" width="100" height="28" fill="#16a34a" rx="4"/>
+  <text x="198" y="403" font-size="11" fill="white" text-anchor="middle">process_risks</text>
+  <rect x="256" y="384" width="118" height="28" fill="#16a34a" rx="4"/>
+  <text x="315" y="403" font-size="11" fill="white" text-anchor="middle">treatment_actions</text>
+  <rect x="382" y="384" width="100" height="28" fill="#16a34a" rx="4"/>
+  <text x="432" y="403" font-size="11" fill="white" text-anchor="middle">process_bpmn</text>
+  <rect x="490" y="384" width="90" height="28" fill="#059669" rx="4"/>
+  <text x="535" y="403" font-size="11" fill="white" text-anchor="middle">users</text>
+  <rect x="588" y="384" width="90" height="28" fill="#059669" rx="4"/>
+  <text x="633" y="403" font-size="11" fill="white" text-anchor="middle">experts</text>
+  <rect x="686" y="384" width="110" height="28" fill="#059669" rx="4"/>
+  <text x="741" y="403" font-size="11" fill="white" text-anchor="middle">companies</text>
+  <rect x="804" y="384" width="120" height="28" fill="#059669" rx="4"/>
+  <text x="864" y="403" font-size="11" fill="white" text-anchor="middle">+ 15 more tables</text>
+
+  <!-- Arrows -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <line x1="480" y1="120" x2="480" y2="138" stroke="#2563eb" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="480" y1="358" x2="480" y2="354" stroke="#16a34a" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Legend -->
+  <rect x="20"  y="452" width="14" height="14" fill="#2563eb" rx="2"/>
+  <text x="38"  y="464" font-size="11" fill="#475569">Core risk modules</text>
+  <rect x="180" y="452" width="14" height="14" fill="#475569" rx="2"/>
+  <text x="198" y="464" font-size="11" fill="#475569">Supporting modules</text>
+  <rect x="360" y="452" width="14" height="14" fill="#16a34a" rx="2"/>
+  <text x="378" y="464" font-size="11" fill="#475569">Data layer</text>
+  <rect x="480" y="452" width="14" height="14" fill="#7c3aed" rx="2"/>
+  <text x="498" y="464" font-size="11" fill="#475569">Workflow engine</text>
+  <rect x="640" y="452" width="14" height="14" fill="#059669" rx="2"/>
+  <text x="658" y="464" font-size="11" fill="#475569">Rule-based services</text>
+  <rect x="800" y="452" width="14" height="14" fill="#0891b2" rx="2"/>
+  <text x="818" y="464" font-size="11" fill="#475569">BPMN module</text>
+</svg>

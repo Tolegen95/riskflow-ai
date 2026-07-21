@@ -63,6 +63,6 @@ python app.py
 
 - [README.md](README.md) - Полное описание
 - [USER_GUIDE.md](USER_GUIDE.md) - Подробное руководство
+- [ROLE_PRODUCTION_GUIDE.md](ROLE_PRODUCTION_GUIDE.md) - Роли, полный сценарий работы и production-эксплуатация
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Архитектура системы
 - [DEPLOYMENT.md](DEPLOYMENT.md) - Развертывание
-

@@ -1,0 +1,15 @@
+subprocess,framework_category
+IM - Log collection,Medium
+IM - Event analysis,High
+IM - Incident classification,Medium
+IM - Response,Medium
+IM - Reporting,Low
+SCADA - Telemetry collection,Medium
+SCADA - Deviation analysis,High
+SCADA - Escalation,Medium
+SCADA - Response,High
+PD - Data collection,High
+PD - Consent verification,High
+PD - Processing,High
+PD - Storage,High
+PD - Deletion / archival,Low

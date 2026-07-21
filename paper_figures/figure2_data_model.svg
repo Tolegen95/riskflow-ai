@@ -1,0 +1,237 @@
+<svg viewBox="0 0 1100 700" width="1100" height="700" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif" font-size="11">
+  <rect x="0" y="0" width="1100" height="700" fill="#f8fafc" rx="10"/>
+  <text x="550" y="18" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">Figure 2. Simplified entity-relationship model</text>
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#94a3b8"/></marker>
+    <marker id="arr-b" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#2563eb"/></marker>
+  </defs>
+
+  <!-- GROUP A: ORGANIZATIONS & PROCESSES -->
+  <rect x="12" y="30" width="252" height="472" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <text x="22" y="46" font-weight="700" font-size="10" fill="#1d4ed8">ORGANIZATIONS &amp; PROCESSES</text>
+
+  <rect x="24" y="54" width="228" height="72" rx="5" fill="white" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="24" y="54" width="228" height="18" rx="5" fill="#2563eb"/>
+  <text x="138" y="66" text-anchor="middle" fill="white" font-weight="700">companies</text>
+  <text x="32" y="82" fill="#334155">PK id</text>
+  <text x="32" y="96" fill="#334155">name UNIQUE</text>
+  <text x="32" y="110" fill="#334155">industry, description, created_at</text>
+
+  <rect x="24" y="140" width="228" height="100" rx="5" fill="white" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="24" y="140" width="228" height="18" rx="5" fill="#2563eb"/>
+  <text x="138" y="152" text-anchor="middle" fill="white" font-weight="700">processes</text>
+  <text x="32" y="170" fill="#334155">PK id</text>
+  <text x="32" y="184" fill="#64748b">FK company_id → companies</text>
+  <text x="32" y="198" fill="#64748b">FK owner_user_id → users</text>
+  <text x="32" y="212" fill="#334155">name, process_type, owner</text>
+  <text x="32" y="226" fill="#334155">input_data, output_data, regulations</text>
+
+  <rect x="24" y="254" width="228" height="82" rx="5" fill="white" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="24" y="254" width="228" height="18" rx="5" fill="#2563eb"/>
+  <text x="138" y="266" text-anchor="middle" fill="white" font-weight="700">subprocesses</text>
+  <text x="32" y="284" fill="#334155">PK id</text>
+  <text x="32" y="298" fill="#64748b">FK process_id → processes</text>
+  <text x="32" y="312" fill="#334155">name, description</text>
+  <text x="32" y="326" fill="#334155">responsible_person, order_index</text>
+
+  <rect x="24" y="350" width="228" height="56" rx="5" fill="white" stroke="#0891b2" stroke-width="1.5"/>
+  <rect x="24" y="350" width="228" height="18" rx="5" fill="#0891b2"/>
+  <text x="138" y="362" text-anchor="middle" fill="white" font-weight="700">process_assets [junction]</text>
+  <text x="32" y="380" fill="#64748b">FK process_id → processes</text>
+  <text x="32" y="394" fill="#64748b">FK asset_id → assets</text>
+
+  <rect x="24" y="420" width="228" height="68" rx="5" fill="white" stroke="#0891b2" stroke-width="1.5"/>
+  <rect x="24" y="420" width="228" height="18" rx="5" fill="#0891b2"/>
+  <text x="138" y="432" text-anchor="middle" fill="white" font-weight="700">process_bpmn</text>
+  <text x="32" y="450" fill="#334155">PK id</text>
+  <text x="32" y="464" fill="#64748b">FK process_id → processes</text>
+  <text x="32" y="478" fill="#334155">bpmn_json, bpmn_xml, created_at</text>
+
+  <!-- GROUP B: RISK RECORDS / WORKFLOW -->
+  <rect x="280" y="30" width="252" height="472" rx="8" fill="#fef9ef" stroke="#fde68a" stroke-width="1.5"/>
+  <text x="290" y="46" font-weight="700" font-size="10" fill="#92400e">RISK RECORDS / WORKFLOW</text>
+
+  <rect x="292" y="54" width="228" height="210" rx="5" fill="white" stroke="#d97706" stroke-width="2"/>
+  <rect x="292" y="54" width="228" height="18" rx="5" fill="#d97706"/>
+  <text x="406" y="66" text-anchor="middle" fill="white" font-weight="800">process_risks  ★ core</text>
+  <text x="300" y="84" fill="#334155">PK id</text>
+  <text x="300" y="98" fill="#64748b">FK process_id, subprocess_id</text>
+  <text x="300" y="112" fill="#64748b">FK asset_id, threat_id, vulnerability_id</text>
+  <text x="300" y="126" fill="#64748b">FK control_measure_id, risk_owner_user_id</text>
+  <text x="300" y="140" fill="#334155">probability, vulnerability_level, impact</text>
+  <text x="300" y="154" fill="#334155">control_effectiveness, cost</text>
+  <text x="300" y="168" fill="#334155">risk_level, residual_risk, risk_reduction</text>
+  <text x="300" y="182" fill="#334155">risk_category, priority</text>
+  <text x="300" y="196" fill="#334155">status, due_date, ai_recommendation</text>
+  <text x="300" y="210" fill="#334155">confidence, evidence  [30 columns total]</text>
+
+  <rect x="292" y="278" width="228" height="96" rx="5" fill="white" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="292" y="278" width="228" height="18" rx="5" fill="#d97706"/>
+  <text x="406" y="290" text-anchor="middle" fill="white" font-weight="700">process_risk_workflow</text>
+  <text x="300" y="308" fill="#334155">PK id</text>
+  <text x="300" y="322" fill="#64748b">FK process_risk_id → process_risks</text>
+  <text x="300" y="336" fill="#64748b">FK user_id → users</text>
+  <text x="300" y="350" fill="#334155">action, from_status, to_status</text>
+  <text x="300" y="364" fill="#334155">comment, username, role</text>
+
+  <rect x="292" y="388" width="228" height="96" rx="5" fill="white" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="292" y="388" width="228" height="18" rx="5" fill="#d97706"/>
+  <text x="406" y="400" text-anchor="middle" fill="white" font-weight="700">risk_expert_assessments</text>
+  <text x="300" y="418" fill="#334155">PK id</text>
+  <text x="300" y="432" fill="#64748b">FK process_risk_id → process_risks</text>
+  <text x="300" y="446" fill="#64748b">FK expert_id → experts</text>
+  <text x="300" y="460" fill="#334155">probability, vulnerability_level</text>
+  <text x="300" y="474" fill="#334155">impact, confidence, evidence</text>
+
+  <!-- GROUP C: TREATMENT ACTIONS -->
+  <rect x="12" y="518" width="520" height="90" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="22" y="534" font-weight="700" font-size="10" fill="#475569">TREATMENT ACTIONS</text>
+  <rect x="24" y="542" width="228" height="56" rx="5" fill="white" stroke="#475569" stroke-width="1.5"/>
+  <rect x="24" y="542" width="228" height="18" rx="5" fill="#475569"/>
+  <text x="138" y="554" text-anchor="middle" fill="white" font-weight="700">risk_treatment_actions</text>
+  <text x="32" y="572" fill="#64748b">FK process_risk_id, owner_user_id</text>
+  <text x="32" y="586" fill="#334155">title, treatment_type, status, progress</text>
+
+  <!-- GROUP D: USERS / AUDIT -->
+  <rect x="548" y="30" width="252" height="300" rx="8" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+  <text x="558" y="46" font-weight="700" font-size="10" fill="#166534">USERS / AUDIT</text>
+
+  <rect x="560" y="54" width="228" height="90" rx="5" fill="white" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="560" y="54" width="228" height="18" rx="5" fill="#16a34a"/>
+  <text x="674" y="66" text-anchor="middle" fill="white" font-weight="700">users</text>
+  <text x="568" y="84" fill="#334155">PK id</text>
+  <text x="568" y="98" fill="#334155">username UNIQUE, password_hash</text>
+  <text x="568" y="112" fill="#334155">role CHECK IN (5 roles)</text>
+  <text x="568" y="126" fill="#64748b">FK expert_id → experts</text>
+
+  <rect x="560" y="158" width="228" height="56" rx="5" fill="white" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="560" y="158" width="228" height="18" rx="5" fill="#16a34a"/>
+  <text x="674" y="170" text-anchor="middle" fill="white" font-weight="700">experts</text>
+  <text x="568" y="188" fill="#334155">PK id, name UNIQUE</text>
+
+  <rect x="560" y="228" width="228" height="88" rx="5" fill="white" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="560" y="228" width="228" height="18" rx="5" fill="#16a34a"/>
+  <text x="674" y="240" text-anchor="middle" fill="white" font-weight="700">audit_log</text>
+  <text x="568" y="258" fill="#334155">PK id</text>
+  <text x="568" y="272" fill="#64748b">FK user_id → users</text>
+  <text x="568" y="286" fill="#334155">action, entity_type, entity_id</text>
+  <text x="568" y="300" fill="#334155">before_data / after_data (JSON), created_at</text>
+
+  <!-- GROUP E: COMPLIANCE -->
+  <rect x="548" y="346" width="252" height="244" rx="8" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="1.5"/>
+  <text x="558" y="362" font-weight="700" font-size="10" fill="#7c3aed">COMPLIANCE</text>
+
+  <rect x="560" y="370" width="228" height="56" rx="5" fill="white" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="560" y="370" width="228" height="18" rx="5" fill="#7c3aed"/>
+  <text x="674" y="382" text-anchor="middle" fill="white" font-weight="700">compliance_standards</text>
+  <text x="568" y="400" fill="#334155">PK id, name UNIQUE, version</text>
+
+  <rect x="560" y="440" width="228" height="66" rx="5" fill="white" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="560" y="440" width="228" height="18" rx="5" fill="#7c3aed"/>
+  <text x="674" y="452" text-anchor="middle" fill="white" font-weight="700">compliance_requirements</text>
+  <text x="568" y="470" fill="#64748b">FK standard_id → compliance_standards</text>
+  <text x="568" y="484" fill="#334155">code, title, domain UNIQUE(std,code)</text>
+
+  <rect x="560" y="520" width="228" height="60" rx="5" fill="white" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="560" y="520" width="228" height="18" rx="5" fill="#7c3aed"/>
+  <text x="674" y="532" text-anchor="middle" fill="white" font-weight="700">compliance_evidence</text>
+  <text x="568" y="550" fill="#64748b">FK requirement_id, treatment_id, owner_user_id</text>
+
+  <!-- GROUP F: LEGACY / REFERENCE DATA -->
+  <rect x="816" y="30" width="272" height="576" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+  <text x="826" y="46" font-weight="700" font-size="10" fill="#c2410c">LEGACY / REFERENCE DATA</text>
+
+  <rect x="828" y="54" width="248" height="86" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="828" y="54" width="248" height="18" rx="5" fill="#94a3b8"/>
+  <text x="952" y="66" text-anchor="middle" fill="white" font-weight="700">assets</text>
+  <text x="836" y="84" fill="#334155">PK id, name UNIQUE</text>
+  <text x="836" y="98" fill="#334155">life_health, economy, ecology,</text>
+  <text x="836" y="112" fill="#334155">dependency, social, international</text>
+
+  <rect x="828" y="154" width="248" height="76" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="828" y="154" width="248" height="18" rx="5" fill="#94a3b8"/>
+  <text x="952" y="166" text-anchor="middle" fill="white" font-weight="700">asset_evaluations</text>
+  <text x="836" y="184" fill="#64748b">FK asset_id, expert_id</text>
+  <text x="836" y="198" fill="#334155">6 expert-scored criteria (0-10)</text>
+
+  <rect x="828" y="244" width="120" height="56" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="828" y="244" width="120" height="18" rx="5" fill="#94a3b8"/>
+  <text x="888" y="256" text-anchor="middle" fill="white" font-weight="700">threats</text>
+  <text x="836" y="274" fill="#334155">PK id, name UNIQUE</text>
+
+  <rect x="956" y="244" width="120" height="56" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="956" y="244" width="120" height="18" rx="5" fill="#94a3b8"/>
+  <text x="1016" y="256" text-anchor="middle" fill="white" font-weight="700">vulnerabilities</text>
+  <text x="964" y="274" fill="#334155">PK id, name, category</text>
+
+  <rect x="828" y="314" width="120" height="56" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="828" y="314" width="120" height="18" rx="5" fill="#94a3b8"/>
+  <text x="888" y="326" text-anchor="middle" fill="white" font-weight="700">control_measures</text>
+  <text x="836" y="344" fill="#334155">PK id, name UNIQUE</text>
+
+  <rect x="956" y="314" width="120" height="56" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="956" y="314" width="120" height="18" rx="5" fill="#94a3b8"/>
+  <text x="1016" y="326" text-anchor="middle" fill="white" font-weight="700">taken_measures</text>
+  <text x="964" y="344" fill="#334155">PK id, name UNIQUE</text>
+
+  <rect x="828" y="384" width="248" height="56" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="828" y="384" width="248" height="18" rx="5" fill="#94a3b8"/>
+  <text x="952" y="396" text-anchor="middle" fill="white" font-weight="700">threat_probabilities</text>
+  <text x="836" y="414" fill="#64748b">FK asset_id, expert_id — probability</text>
+
+  <rect x="828" y="454" width="120" height="56" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="828" y="454" width="120" height="18" rx="5" fill="#94a3b8"/>
+  <text x="888" y="466" text-anchor="middle" fill="white" font-weight="700">asset_owners</text>
+  <text x="836" y="484" fill="#334155">PK id, name UNIQUE</text>
+
+  <rect x="956" y="454" width="120" height="56" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="956" y="454" width="120" height="18" rx="5" fill="#94a3b8"/>
+  <text x="1016" y="466" text-anchor="middle" fill="white" font-weight="700">criteria_weights</text>
+  <text x="964" y="484" fill="#334155">6 REAL criteria</text>
+
+  <rect x="828" y="524" width="248" height="76" rx="5" fill="white" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="828" y="524" width="248" height="18" rx="5" fill="#94a3b8"/>
+  <text x="952" y="536" text-anchor="middle" fill="white" font-weight="700">risk_analysis</text>
+  <text x="836" y="554" fill="#64748b">FK asset_id, threat_id, vulnerability_id</text>
+  <text x="836" y="568" fill="#64748b">FK taken_measure_id, control_measure_id</text>
+  <text x="836" y="582" fill="#334155">control_effectiveness</text>
+
+  <!-- FK ARROWS -->
+  <line x1="138" y1="126" x2="138" y2="140" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-b)"/>
+  <line x1="138" y1="240" x2="138" y2="254" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-b)"/>
+  <line x1="138" y1="336" x2="138" y2="350" stroke="#0891b2" stroke-width="1.5" marker-end="url(#arr-b)"/>
+  <line x1="138" y1="406" x2="138" y2="420" stroke="#0891b2" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+  <line x1="252" y1="200" x2="292" y2="90" stroke="#d97706" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="252" y1="300" x2="292" y2="120" stroke="#d97706" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+  <line x1="406" y1="264" x2="406" y2="278" stroke="#d97706" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="406" y1="374" x2="406" y2="388" stroke="#d97706" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="292" y1="160" x2="138" y2="542" stroke="#475569" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+  <line x1="560" y1="110" x2="252" y2="185" stroke="#64748b" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="560" y1="120" x2="520" y2="320" stroke="#64748b" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="674" y1="158" x2="674" y2="144" stroke="#16a34a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="560" y1="185" x2="520" y2="430" stroke="#64748b" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+  <line x1="674" y1="426" x2="674" y2="440" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="674" y1="506" x2="674" y2="520" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="252" y1="560" x2="560" y2="555" stroke="#7c3aed" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+  <line x1="952" y1="140" x2="952" y2="154" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="952" y1="440" x2="952" y2="524" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="520" y1="90" x2="828" y2="70" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+  <!-- LEGEND -->
+  <rect x="12" y="622" width="600" height="66" rx="6" fill="white" stroke="#e2e8f0"/>
+  <text x="22" y="638" font-weight="700" font-size="11" fill="#334155">Legend:</text>
+  <line x1="22" y1="649" x2="52" y2="649" stroke="#2563eb" stroke-width="2"/>
+  <text x="58" y="653" fill="#475569" font-size="10">FK (required relationship)</text>
+  <line x1="22" y1="665" x2="52" y2="665" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="58" y="669" fill="#475569" font-size="10">FK (optional / legacy)</text>
+  <text x="230" y="649" fill="#d97706" font-weight="700" font-size="10">★ — core table</text>
+  <text x="230" y="665" fill="#475569" font-size="10">PK — primary key, FK — foreign key</text>
+  <text x="430" y="649" fill="#475569" font-size="10">Core schema: 6 tables shown</text>
+  <text x="430" y="665" fill="#475569" font-size="10">Legacy/reference: 11 tables · 22 total</text>
+</svg>

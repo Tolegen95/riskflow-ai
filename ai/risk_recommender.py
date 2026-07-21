@@ -2,7 +2,7 @@ def recommend_process_risk(residual_risk, control_effectiveness=None, control_me
     effectiveness = control_effectiveness if control_effectiveness is not None else 0
     recommendations = []
 
-    if residual_risk > 7:
+    if residual_risk > 6.9:
         recommendations.append("High priority mitigation required.")
     if not control_measure_id:
         recommendations.append("Add control measure. Необходимо назначить контрольную меру для подпроцесса.")

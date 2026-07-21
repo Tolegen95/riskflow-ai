@@ -34,6 +34,7 @@ python app.py
 - **[README.md](DOCUMENTATION/README.md)** - Полное описание проекта
 - **[QUICK_START.md](DOCUMENTATION/QUICK_START.md)** - Быстрый старт за 5 минут
 - **[USER_GUIDE.md](DOCUMENTATION/USER_GUIDE.md)** - Подробное руководство пользователя
+- **[ROLE_PRODUCTION_GUIDE.md](DOCUMENTATION/ROLE_PRODUCTION_GUIDE.md)** - Руководство по ролям, запуску и production-эксплуатации
 - **[ARCHITECTURE.md](DOCUMENTATION/ARCHITECTURE.md)** - Архитектура и техническая документация
 - **[DEPLOYMENT.md](DOCUMENTATION/DEPLOYMENT.md)** - Руководство по развертыванию
 - **[CHANGELOG.md](DOCUMENTATION/CHANGELOG.md)** - История изменений
@@ -71,4 +72,3 @@ risk_project/
 ## 🤝 Вклад
 
 Приветствуются предложения и улучшения!
-

@@ -155,3 +155,10 @@ risk_project/
 
 См. [CHANGELOG.md](CHANGELOG.md) для истории изменений.
 
+## 📚 Дополнительные руководства
+
+- [QUICK_START.md](QUICK_START.md) - быстрый запуск проекта
+- [USER_GUIDE.md](USER_GUIDE.md) - базовое руководство пользователя
+- [ROLE_PRODUCTION_GUIDE.md](ROLE_PRODUCTION_GUIDE.md) - руководство по ролям, end-to-end использованию и production-эксплуатации
+- [ARCHITECTURE.md](ARCHITECTURE.md) - архитектура системы
+- [DEPLOYMENT.md](DEPLOYMENT.md) - развертывание

@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software or its pilot validation data, please cite it as below."
+title: "RiskFlow AI: A Rule-Based Decision-Support Framework for Subprocess-Level Residual Risk Computation on BPMN Models"
+type: software
+authors:
+  - family-names: Amrenov
+    given-names: Askhat
+    affiliation: "L.N. Gumilyov Eurasian National University"
+  - family-names: Satybaldina
+    given-names: Dina
+    affiliation: "L.N. Gumilyov Eurasian National University"
+  - family-names: Nurusheva
+    given-names: Assel
+    affiliation: "L.N. Gumilyov Eurasian National University"
+  - family-names: Issainova
+    given-names: Aliya
+    affiliation: "L.N. Gumilyov Eurasian National University"
+repository-code: "https://github.com/Tolegen95/riskflow-ai"
+license: MIT
+version: 1.0.0
+date-released: "2026-07-21"
+keywords:
+  - risk assessment
+  - BPMN
+  - business process risk management
+  - decision support system
+  - compliance management
+  - expert systems

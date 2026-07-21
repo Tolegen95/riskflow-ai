@@ -42,6 +42,7 @@ instance/
 
 # Database
 *.db
+*.db.bak-*
 *.sqlite
 *.sqlite3
 risk_assessment.db
@@ -66,4 +67,10 @@ Thumbs.db
 *.tmp
 *.bak
 *.swp
+
+# Personal / non-project administrative files (not for public repo)
+Авторское право RiskFlow AI.docx
+Авторское право RiskFlow AI.html
+Архив.zip
+задание.txt
 
