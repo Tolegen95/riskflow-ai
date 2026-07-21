@@ -538,7 +538,7 @@ http://localhost:5000
 Default admin:
 
 ```text
-admin / admin123
+admin / <пароль из консоли при первом запуске, либо RISKFLOW_ADMIN_PASSWORD>
 ```
 
 Заполнение справочников:
@@ -572,7 +572,7 @@ python -m py_compile app.py add_threats.py populate_vulnerabilities.py populate_
 Ручная проверка по документации:
 
 1. Запустить `python app.py`.
-2. Войти как `admin/admin123`.
+2. Войти как `admin` (пароль — из консоли при первом запуске, либо `RISKFLOW_ADMIN_PASSWORD`).
 3. Добавить эксперта и пользователя.
 4. Добавить актив.
 5. От имени эксперта добавить оценки 0-10 и вероятность 1-3.
@@ -596,7 +596,7 @@ python -m py_compile app.py add_threats.py populate_vulnerabilities.py populate_
 
 - `app.secret_key` захардкожен.
 - `debug=True` включен в `app.run`.
-- Default admin `admin/admin123` создается автоматически.
+- ~~Default admin `admin/admin123` создается автоматически~~ — исправлено: пароль теперь случайный (или из `RISKFLOW_ADMIN_PASSWORD`), см. `app.py`.
 - Нет CSRF-защиты для POST-форм.
 - Нет rate limiting для login.
 - SQLite-файл хранится в корне проекта.

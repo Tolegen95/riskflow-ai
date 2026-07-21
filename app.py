@@ -14,6 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import secrets
 import uuid
 import textwrap
 import re
@@ -704,10 +705,20 @@ def init_db():
                 ('A.6.1.3 Contact with authorities',),
                 ('A.6.1.4 Contact with special interest groups',)
             ])
-        # Создаём администратора по умолчанию, если его нет
+        # Создаём администратора по умолчанию, если его нет.
+        # Пароль берётся из переменной окружения RISKFLOW_ADMIN_PASSWORD (удобно для
+        # локальной разработки, тестов и воспроизводимых демо-сценариев); если она не
+        # задана, генерируется случайный пароль и печатается один раз при первом запуске,
+        # чтобы в коде и репозитории не был захардкожен предсказуемый пароль администратора.
         cursor.execute('SELECT COUNT(*) FROM users WHERE role = ?', ('admin',))
         if cursor.fetchone()[0] == 0:
-            admin_password = generate_password_hash('admin123')
+            admin_password_plain = os.environ.get('RISKFLOW_ADMIN_PASSWORD')
+            if not admin_password_plain:
+                admin_password_plain = secrets.token_urlsafe(12)
+                print(f"[RiskFlow AI] Generated a random default admin password: {admin_password_plain}")
+                print("[RiskFlow AI] Log in as 'admin' with this password and change it immediately. "
+                      "Set RISKFLOW_ADMIN_PASSWORD to use a fixed password instead (e.g., for local dev/tests).")
+            admin_password = generate_password_hash(admin_password_plain)
             cursor.execute('''
                 INSERT INTO users (username, password_hash, role)
                 VALUES (?, ?, ?)
