@@ -57,7 +57,7 @@ risk_project/
 - `DOCUMENTATION/`: подробные руководства; при сомнениях читать точечно.
 
 ## Ключевая логика
-- `init_db()` создает SQLite-таблицы и default admin `admin/admin123`.
+- `init_db()` создает SQLite-таблицы и default admin `admin`; пароль — из `RISKFLOW_ADMIN_PASSWORD`, либо случайно генерируется и печатается в консоль при первом запуске.
 - Сущности: users, experts, assets, asset_evaluations, criteria_weights, threat_probabilities, asset_owners, threats, vulnerabilities, taken_measures, control_measures, risk_analysis.
 - Процессные сущности: companies, processes, subprocesses, process_assets, process_bpmn, process_risks.
 - Эксперты оценивают активы по 6 критериям: `life_health`, `economy`, `ecology`, `dependency`, `social`, `international`.
@@ -86,7 +86,7 @@ risk_project/
 pip install -r requirements.txt
 python app.py
 ```
-Открыть: `http://localhost:5000`. Default admin: `admin` / `admin123`.
+Открыть: `http://localhost:5000`. Default admin: `admin`, пароль см. в консоли при первом запуске (или задайте `RISKFLOW_ADMIN_PASSWORD`).
 
 Демо-кейсы:
 ```bash
