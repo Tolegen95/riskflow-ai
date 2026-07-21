@@ -424,7 +424,7 @@ This study included a pilot survey (Section 5) with 8 adult professional partici
 Participants were informed in writing, before beginning Task 1, of the pilot's purpose, its voluntary and anonymous nature, and that responses would be reported only in aggregate (Section 5.2). A separate, explicitly signed consent record was not collected at the time of original data collection; written retrospective confirmation of consent to use the reported, anonymized responses was subsequently obtained from all 8 participants. We nonetheless note the original absence of a signed record at the time of collection as a procedural gap in Section 6.3, to be closed by design (i.e., collected prospectively rather than retrospectively) in the follow-up pilot proposed in Section 7.1.
 
 ## Data Availability Statement
-The application source code, database schema, the demonstration seed scripts used to generate the three case studies in Section 4, and the pilot validation instrument and analysis scripts (`validation_study/`) used in Section 5 are available from the corresponding author upon reasonable request. A public repository release (with DOI) is planned before submission; this statement will be updated with the repository URL and DOI once published.
+The application source code, database schema, the demonstration seed scripts used to generate the three case studies in Section 4, and the pilot validation instrument and analysis scripts (`validation_study/`) used in Section 5 are openly available at https://github.com/Tolegen95/riskflow-ai under the MIT license. An archived, DOI-citable release (Zenodo) is being finalized; this statement will be updated with the DOI once minted.
 
 ## Conflicts of Interest
 The authors declare no conflicts of interest.
